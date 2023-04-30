@@ -10,8 +10,10 @@ import com.humolang.wifiless.WiFilessApplication
 import com.humolang.wifiless.data.RssiRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 class StartViewModel(
     private val _dequeCapacity: Int = 120,
@@ -21,9 +23,11 @@ class StartViewModel(
     private val _latestRssi = MutableStateFlow(0)
     val latestRssi = _latestRssi.asStateFlow()
 
-    private val _rssiPoints = ArrayDeque<Int>(dequeCapacity)
-    val rssiPoints: ArrayDeque<Int>
-        get() = _rssiPoints
+    private val _rssiDeque = ArrayDeque<Int>(_dequeCapacity)
+
+    private val _rssiValues = MutableStateFlow(_rssiDeque.toList())
+    val rssiValues: StateFlow<List<Int>>
+        get() = _rssiValues.asStateFlow()
 
     val dequeCapacity: Int
         get() = _dequeCapacity
@@ -33,10 +37,12 @@ class StartViewModel(
             rssiRepository.latestRssi.collect { rssi ->
                 _latestRssi.value = rssi
 
-                _rssiPoints.add(rssi)
-                if (_rssiPoints.size > dequeCapacity) {
-                    _rssiPoints.removeFirst()
+                _rssiDeque.add(abs(rssi))
+                if (_rssiDeque.size > dequeCapacity) {
+                    _rssiDeque.removeFirst()
                 }
+
+                _rssiValues.value = _rssiDeque.toList()
             }
         }
     }

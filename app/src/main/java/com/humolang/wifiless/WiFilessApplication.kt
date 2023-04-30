@@ -12,7 +12,7 @@ class WiFilessApplication : Application() {
         super.onCreate()
 
         rssiRepository = RssiRepository(
-            rssiDataSource = RssiDataSource()
+            rssiDataSource = RssiDataSource(this)
         )
     }
 }

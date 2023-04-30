@@ -43,11 +43,13 @@ fun NetworkGraph(
 
     val latestRssi by startViewModel
         .latestRssi.collectAsStateWithLifecycle()
-    val rssiPoints = startViewModel.rssiPoints
+    val rssiPoints by startViewModel
+        .rssiValues.collectAsStateWithLifecycle()
 
     Column(modifier = modifier.padding(16.dp)) {
         Text(text = "latest rssi = $latestRssi")
         Text(text = "deque size = ${rssiPoints.size}")
+
         Surface(modifier = Modifier
             .border(2.dp, Color.Blue, RoundedCornerShape(8.dp))
         ) {
@@ -58,10 +60,13 @@ fun NetworkGraph(
                 onDraw = {
                     val graph = Path()
 
-                    graph.moveTo(
-                        0f,
+                    val y = if (rssiPoints.isNotEmpty()) {
                         size.height * (rssiPoints.first().toFloat() / 100)
-                    )
+                    } else {
+                        0f
+                    }
+
+                    graph.moveTo(0f, y)
 
                     for (index in rssiPoints.indices) {
                         if (index == 0) {
