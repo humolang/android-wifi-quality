@@ -8,7 +8,6 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.humolang.wifiless.WiFilessApplication
 import com.humolang.wifiless.data.RssiRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,16 +28,25 @@ class StartViewModel(
     val rssiValues: StateFlow<List<Int>>
         get() = _rssiValues.asStateFlow()
 
+    private val isWifiConnection: StateFlow<Boolean>
+        get() = rssiRepository.isWifiConnection
+
     val dequeCapacity: Int
         get() = _dequeCapacity
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-            rssiRepository.latestRssi.collect { rssi ->
+        viewModelScope.launch {
+            collectLatestRssi()
+        }
+    }
+
+    private suspend fun collectLatestRssi() {
+        rssiRepository.latestRssi.collect { rssi ->
+            if (isWifiConnection.value) {
                 _latestRssi.value = rssi
 
                 _rssiDeque.add(abs(rssi))
-                if (_rssiDeque.size > dequeCapacity) {
+                if (_rssiDeque.size > _dequeCapacity) {
                     _rssiDeque.removeFirst()
                 }
 
