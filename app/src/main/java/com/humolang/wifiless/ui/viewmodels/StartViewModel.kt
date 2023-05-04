@@ -1,4 +1,4 @@
-package com.humolang.wifiless.viewmodels
+package com.humolang.wifiless.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.humolang.wifiless.WiFilessApplication
-import com.humolang.wifiless.data.RssiRepository
+import com.humolang.wifiless.data.repositories.RssiRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,21 +28,23 @@ class StartViewModel(
     val rssiValues: StateFlow<List<Int>>
         get() = _rssiValues.asStateFlow()
 
-    private val isWifiConnection: StateFlow<Boolean>
-        get() = rssiRepository.isWifiConnection
+    private val _isWifiConnected = MutableStateFlow(false)
+    val isWifiConnected: StateFlow<Boolean>
+        get() = _isWifiConnected.asStateFlow()
 
     val dequeCapacity: Int
         get() = _dequeCapacity
 
     init {
         viewModelScope.launch {
-            collectLatestRssi()
+            launch { collectIsWifiConnected() }
+            launch { collectLatestRssi() }
         }
     }
 
     private suspend fun collectLatestRssi() {
         rssiRepository.latestRssi.collect { rssi ->
-            if (isWifiConnection.value) {
+            if (_isWifiConnected.value) {
                 _latestRssi.value = rssi
 
                 _rssiDeque.add(abs(rssi))
@@ -52,6 +54,12 @@ class StartViewModel(
 
                 _rssiValues.value = _rssiDeque.toList()
             }
+        }
+    }
+
+    private suspend fun collectIsWifiConnected() {
+        rssiRepository.isWifiConnected.collect { isWifiConnected ->
+            _isWifiConnected.value = isWifiConnected
         }
     }
 

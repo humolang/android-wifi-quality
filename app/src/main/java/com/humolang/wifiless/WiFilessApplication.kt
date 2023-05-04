@@ -1,25 +1,25 @@
 package com.humolang.wifiless
 
 import android.app.Application
-import com.humolang.wifiless.data.RssiDataSource
-import com.humolang.wifiless.data.RssiRepository
-import com.humolang.wifiless.data.WifiCallback
+import com.humolang.wifiless.data.datasources.RssiValue
+import com.humolang.wifiless.data.datasources.WifiCallback
+import com.humolang.wifiless.data.repositories.RssiRepository
 
 class WiFilessApplication : Application() {
 
     lateinit var wifiCallback: WifiCallback
-    lateinit var rssiDataSource: RssiDataSource
+    lateinit var rssiValue: RssiValue
     lateinit var rssiRepository: RssiRepository
 
     override fun onCreate() {
         super.onCreate()
 
         wifiCallback = WifiCallback(this)
-        rssiDataSource = RssiDataSource(this)
+        rssiValue = RssiValue(this)
 
         rssiRepository = RssiRepository(
             wifiCallback = wifiCallback,
-            rssiDataSource = rssiDataSource
+            rssiValue = rssiValue
         )
     }
 }

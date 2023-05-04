@@ -1,9 +1,9 @@
-package com.humolang.wifiless.data
+package com.humolang.wifiless.data.datasources
 
 import android.content.Context
 import android.net.wifi.WifiManager
 
-class RssiDataSource(
+class RssiValue(
     private val applicationContext: Context
 ) {
 
