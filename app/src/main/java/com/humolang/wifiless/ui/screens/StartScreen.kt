@@ -32,56 +32,60 @@ fun StartScreen(
     startViewModel: StartViewModel =
         viewModel(factory = StartViewModel.Factory)
 ) {
-    NetworkGraph(startViewModel)
+    val startUiState by startViewModel
+        .startUiState.collectAsStateWithLifecycle()
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(text = "latest rssi = ${startUiState.latestRssi}")
+        Text(text = "deque size = ${startUiState.rssiValues.size}")
+        RssiGraph(
+            rssiValues = startUiState.rssiValues,
+            dequeCapacity = startViewModel.dequeCapacity
+        )
+    }
 }
 
 @Composable
-fun NetworkGraph(
-    startViewModel: StartViewModel,
+fun RssiGraph(
+    rssiValues: ArrayDeque<Int>,
+    dequeCapacity: Int,
     modifier: Modifier = Modifier
 ) {
+    Surface(modifier = modifier
+        .border(
+            2.dp,
+            Color.Blue,
+            RoundedCornerShape(8.dp)
+        )
+    ) {
+        Canvas(modifier = Modifier
+            .fillMaxWidth()
+            .height(256.dp)
+            .padding(8.dp),
+            onDraw = {
+                val graph = Path()
 
-    val latestRssi by startViewModel
-        .latestRssi.collectAsStateWithLifecycle()
-    val rssiPoints by startViewModel
-        .rssiValues.collectAsStateWithLifecycle()
-
-    Column(modifier = modifier.padding(16.dp)) {
-        Text(text = "latest rssi = $latestRssi")
-        Text(text = "deque size = ${rssiPoints.size}")
-
-        Surface(modifier = Modifier
-            .border(2.dp, Color.Blue, RoundedCornerShape(8.dp))
-        ) {
-            Canvas(modifier = Modifier
-                .fillMaxWidth()
-                .height(256.dp)
-                .padding(8.dp),
-                onDraw = {
-                    val graph = Path()
-
-                    val y = if (rssiPoints.isNotEmpty()) {
-                        size.height * (rssiPoints.first().toFloat() / 100)
-                    } else {
-                        0f
-                    }
-
-                    graph.moveTo(0f, y)
-
-                    for (index in rssiPoints.indices) {
-                        if (index == 0) {
-                            continue
-                        }
-
-                        graph.lineTo(
-                            size.width * (index.toFloat() / startViewModel.dequeCapacity),
-                            size.height * (rssiPoints[index].toFloat() / 100)
-                        )
-                    }
-
-                    drawPath(graph, Color.Red, style = Stroke(width = 6f))
+                val y = if (rssiValues.isNotEmpty()) {
+                    size.height * (rssiValues.first().toFloat() / 100)
+                } else {
+                    0f
                 }
-            )
-        }
+
+                graph.moveTo(0f, y)
+
+                for (index in rssiValues.indices) {
+                    if (index == 0) {
+                        continue
+                    }
+
+                    graph.lineTo(
+                        size.width * (index.toFloat() / dequeCapacity),
+                        size.height * (rssiValues[index].toFloat() / 100)
+                    )
+                }
+
+                drawPath(graph, Color.Red, style = Stroke(width = 6f))
+            }
+        )
     }
 }

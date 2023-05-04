@@ -7,59 +7,53 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.humolang.wifiless.WiFilessApplication
-import com.humolang.wifiless.data.repositories.RssiRepository
+import com.humolang.wifiless.data.repositories.WifiParameters
+import com.humolang.wifiless.ui.states.StartUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 
 class StartViewModel(
-    private val _dequeCapacity: Int = 120,
-    private val rssiRepository: RssiRepository
+    private val wifiParameters: WifiParameters
 ) : ViewModel() {
 
-    private val _latestRssi = MutableStateFlow(0)
-    val latestRssi = _latestRssi.asStateFlow()
-
-    private val _rssiDeque = ArrayDeque<Int>(_dequeCapacity)
-
-    private val _rssiValues = MutableStateFlow(_rssiDeque.toList())
-    val rssiValues: StateFlow<List<Int>>
-        get() = _rssiValues.asStateFlow()
-
-    private val _isWifiConnected = MutableStateFlow(false)
-    val isWifiConnected: StateFlow<Boolean>
-        get() = _isWifiConnected.asStateFlow()
+    private val _startUiState = MutableStateFlow(StartUiState())
+    val startUiState: StateFlow<StartUiState>
+        get() = _startUiState.asStateFlow()
 
     val dequeCapacity: Int
-        get() = _dequeCapacity
+        get() = wifiParameters.dequeCapacity
 
     init {
         viewModelScope.launch {
             launch { collectIsWifiConnected() }
             launch { collectLatestRssi() }
-        }
-    }
-
-    private suspend fun collectLatestRssi() {
-        rssiRepository.latestRssi.collect { rssi ->
-            if (_isWifiConnected.value) {
-                _latestRssi.value = rssi
-
-                _rssiDeque.add(abs(rssi))
-                if (_rssiDeque.size > _dequeCapacity) {
-                    _rssiDeque.removeFirst()
-                }
-
-                _rssiValues.value = _rssiDeque.toList()
-            }
+            launch { collectRssiValues() }
         }
     }
 
     private suspend fun collectIsWifiConnected() {
-        rssiRepository.isWifiConnected.collect { isWifiConnected ->
-            _isWifiConnected.value = isWifiConnected
+        wifiParameters.isWifiConnected.collect { isWifiConnected ->
+            _startUiState.value = _startUiState.value.copy(
+                isWifiConnected = isWifiConnected
+            )
+        }
+    }
+
+    private suspend fun collectLatestRssi() {
+        wifiParameters.latestRssi.collect { latestRssi ->
+            _startUiState.value = _startUiState.value.copy(
+                latestRssi = latestRssi
+            )
+        }
+    }
+
+    private suspend fun collectRssiValues() {
+        wifiParameters.rssiValues.collect { rssiValues ->
+            _startUiState.value = _startUiState.value.copy(
+                rssiValues = rssiValues
+            )
         }
     }
 
@@ -67,11 +61,11 @@ class StartViewModel(
 
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                val rssiRepository = (this[APPLICATION_KEY]
-                        as WiFilessApplication).rssiRepository
+                val wifiParameters = (this[APPLICATION_KEY]
+                        as WiFilessApplication).wifiParameters
 
                 StartViewModel(
-                    rssiRepository = rssiRepository
+                    wifiParameters = wifiParameters
                 )
             }
         }

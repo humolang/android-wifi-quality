@@ -18,6 +18,15 @@ class WifiCallback(
     applicationContext: Context
 ) {
 
+    private val connectivityManager = applicationContext.getSystemService(
+        ConnectivityManager::class.java
+    ) as ConnectivityManager
+
+    private val wifiRequest = NetworkRequest.Builder()
+        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+        .build()
+
     private val _isWifiConnected = callbackFlow {
         val wifiCallback = object : NetworkCallback() {
 
@@ -56,13 +65,4 @@ class WifiCallback(
 
     val isWifiConnected: Flow<Boolean>
         get() = _isWifiConnected
-
-    private val connectivityManager = applicationContext.getSystemService(
-        ConnectivityManager::class.java
-    ) as ConnectivityManager
-
-    private val wifiRequest = NetworkRequest.Builder()
-        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-        .build()
 }
