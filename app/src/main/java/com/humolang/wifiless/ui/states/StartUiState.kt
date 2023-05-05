@@ -5,5 +5,6 @@ data class StartUiState(
     val latestRssi: Int = 0,
     val rssiValues: ArrayDeque<Int> = ArrayDeque(),
     val latestSpeed: Int = 0,
-    val speedValues: ArrayDeque<Int> = ArrayDeque()
+    val speedValues: ArrayDeque<Int> = ArrayDeque(),
+    val ipAddress: String = ""
 )

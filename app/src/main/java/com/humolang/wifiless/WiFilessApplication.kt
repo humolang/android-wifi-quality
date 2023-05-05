@@ -3,7 +3,10 @@ package com.humolang.wifiless
 import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.wifi.WifiManager
+import com.humolang.wifiless.data.datasources.IpCallback
 import com.humolang.wifiless.data.datasources.LinkSpeedValue
 import com.humolang.wifiless.data.datasources.RssiValue
 import com.humolang.wifiless.data.datasources.WifiCallback
@@ -19,7 +22,19 @@ class WiFilessApplication : Application() {
         val connectivityManager = getSystemService(
             Context.CONNECTIVITY_SERVICE
         ) as ConnectivityManager
-        val wifiCallback = WifiCallback(connectivityManager)
+        val wifiRequest = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .build()
+
+        val wifiCallback = WifiCallback(
+            connectivityManager,
+            wifiRequest
+        )
+        val ipCallback = IpCallback(
+            connectivityManager,
+            wifiRequest
+        )
 
         val wifiManager = getSystemService(
             Context.WIFI_SERVICE
@@ -29,6 +44,7 @@ class WiFilessApplication : Application() {
 
         wifiParameters = WifiParameters(
             wifiCallback = wifiCallback,
+            ipCallback = ipCallback,
             rssiValue = rssiValue,
             linkSpeedValue = linkSpeedValue
         )

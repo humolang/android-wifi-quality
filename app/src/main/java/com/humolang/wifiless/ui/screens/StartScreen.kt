@@ -44,6 +44,10 @@ fun StartScreen(
             dequeCapacity = startViewModel.dequeCapacity,
             modifier = Modifier.padding(top = 16.dp)
         )
+        Text(
+            text = "IP Address: ${startUiState.ipAddress}",
+            modifier = Modifier.padding(top = 16.dp)
+        )
     }
 }
 

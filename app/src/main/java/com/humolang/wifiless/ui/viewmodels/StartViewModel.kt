@@ -32,6 +32,7 @@ class StartViewModel(
             launch { collectRssiValues() }
             launch { collectLatestSpeed() }
             launch { collectSpeedValues() }
+            launch { collectIpAddress() }
         }
     }
 
@@ -71,6 +72,14 @@ class StartViewModel(
         wifiParameters.speedValues.collect { speedValues ->
             _startUiState.value = _startUiState.value.copy(
                 speedValues = speedValues
+            )
+        }
+    }
+
+    private suspend fun collectIpAddress() {
+        wifiParameters.ipAddress.collect { ipAddress ->
+            _startUiState.value = _startUiState.value.copy(
+                ipAddress = ipAddress
             )
         }
     }

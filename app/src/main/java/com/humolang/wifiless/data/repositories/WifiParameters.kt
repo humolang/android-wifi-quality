@@ -1,5 +1,6 @@
 package com.humolang.wifiless.data.repositories
 
+import com.humolang.wifiless.data.datasources.IpCallback
 import com.humolang.wifiless.data.datasources.LinkSpeedValue
 import com.humolang.wifiless.data.datasources.WifiCallback
 import com.humolang.wifiless.data.datasources.RssiValue
@@ -9,6 +10,7 @@ import kotlin.math.abs
 
 class WifiParameters(
     wifiCallback: WifiCallback,
+    ipCallback: IpCallback,
     rssiValue: RssiValue,
     linkSpeedValue: LinkSpeedValue,
     private val _dequeCapacity: Int = 120,
@@ -56,4 +58,8 @@ class WifiParameters(
     }
     val speedValues: Flow<ArrayDeque<Int>>
         get() = _speedValues
+
+    private val _ipAddress = ipCallback.ipAddress
+    val ipAddress: Flow<String>
+        get() = _ipAddress
 }
