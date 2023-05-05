@@ -1,6 +1,5 @@
 package com.humolang.wifiless.data.datasources
 
-import android.content.Context
 import android.net.ConnectivityManager
 import android.net.ConnectivityManager.NetworkCallback
 import android.net.Network
@@ -15,12 +14,8 @@ import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.callbackFlow
 
 class WifiCallback(
-    applicationContext: Context
+    private val connectivityManager: ConnectivityManager
 ) {
-
-    private val connectivityManager = applicationContext.getSystemService(
-        ConnectivityManager::class.java
-    ) as ConnectivityManager
 
     private val wifiRequest = NetworkRequest.Builder()
         .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)

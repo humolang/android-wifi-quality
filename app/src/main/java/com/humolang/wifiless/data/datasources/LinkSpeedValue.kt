@@ -5,25 +5,25 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class RssiValue(
+class LinkSpeedValue(
     private val wifiManager: WifiManager,
     private val refreshIntervalMs: Long = 100
 ) {
 
-    private val _rssi: Int
+    private val _linkSpeed: Int
         get() {
             val wifiInfo = wifiManager
                 .connectionInfo
 
-            return wifiInfo.rssi
+            return wifiInfo.linkSpeed
         }
 
-    private val _latestRssi = flow {
+    private val _latestSpeed = flow {
         while (true) {
-            emit(_rssi)
+            emit(_linkSpeed)
             delay(refreshIntervalMs)
         }
     }
-    val latestRssi: Flow<Int>
-        get() = _latestRssi
+    val latestSpeed: Flow<Int>
+        get() = _latestSpeed
 }

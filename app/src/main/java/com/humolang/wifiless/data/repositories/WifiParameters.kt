@@ -1,5 +1,6 @@
 package com.humolang.wifiless.data.repositories
 
+import com.humolang.wifiless.data.datasources.LinkSpeedValue
 import com.humolang.wifiless.data.datasources.WifiCallback
 import com.humolang.wifiless.data.datasources.RssiValue
 import kotlinx.coroutines.flow.Flow
@@ -9,6 +10,7 @@ import kotlin.math.abs
 class WifiParameters(
     wifiCallback: WifiCallback,
     rssiValue: RssiValue,
+    linkSpeedValue: LinkSpeedValue,
     private val _dequeCapacity: Int = 120,
 ) {
 
@@ -19,6 +21,9 @@ class WifiParameters(
     private val _latestRssi = rssiValue.latestRssi
     val latestRssi: Flow<Int>
         get() = _latestRssi
+
+    val dequeCapacity: Int
+        get() = _dequeCapacity
 
     private val rssiDeque = ArrayDeque<Int>(_dequeCapacity)
 
@@ -34,6 +39,21 @@ class WifiParameters(
     val rssiValues: Flow<ArrayDeque<Int>>
         get() = _rssiValues
 
-    val dequeCapacity: Int
-        get() = _dequeCapacity
+    private val _latestSpeed = linkSpeedValue.latestSpeed
+    val latestSpeed: Flow<Int>
+        get() = _latestSpeed
+
+    private val speedDeque = ArrayDeque<Int>(_dequeCapacity)
+
+    private val _speedValues = _latestSpeed.map { speed ->
+        speedDeque.add(speed)
+
+        if (speedDeque.size >_dequeCapacity) {
+            speedDeque.removeFirst()
+        }
+
+        ArrayDeque(speedDeque)
+    }
+    val speedValues: Flow<ArrayDeque<Int>>
+        get() = _speedValues
 }

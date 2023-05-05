@@ -30,6 +30,8 @@ class StartViewModel(
             launch { collectIsWifiConnected() }
             launch { collectLatestRssi() }
             launch { collectRssiValues() }
+            launch { collectLatestSpeed() }
+            launch { collectSpeedValues() }
         }
     }
 
@@ -53,6 +55,22 @@ class StartViewModel(
         wifiParameters.rssiValues.collect { rssiValues ->
             _startUiState.value = _startUiState.value.copy(
                 rssiValues = rssiValues
+            )
+        }
+    }
+
+    private suspend fun collectLatestSpeed() {
+        wifiParameters.latestSpeed.collect { latestSpeed ->
+            _startUiState.value = _startUiState.value.copy(
+                latestSpeed = latestSpeed
+            )
+        }
+    }
+
+    private suspend fun collectSpeedValues() {
+        wifiParameters.speedValues.collect { speedValues ->
+            _startUiState.value = _startUiState.value.copy(
+                speedValues = speedValues
             )
         }
     }
