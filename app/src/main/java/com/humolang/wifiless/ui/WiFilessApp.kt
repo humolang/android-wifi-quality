@@ -5,7 +5,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.humolang.wifiless.ui.screens.StartScreen
+import androidx.navigation.compose.rememberNavController
+import com.humolang.wifiless.ui.navigation.WiFilessNavHost
 import com.humolang.wifiless.ui.theme.WiFilessTheme
 
 @Composable
@@ -15,7 +16,8 @@ fun WiFilessApp(modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.background,
             modifier = modifier.fillMaxSize()
         ) {
-            StartScreen()
+            val navController = rememberNavController()
+            WiFilessNavHost(navController = navController)
         }
     }
 }

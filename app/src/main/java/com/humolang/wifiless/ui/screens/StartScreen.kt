@@ -4,15 +4,18 @@ import android.net.wifi.WifiInfo
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -23,6 +26,7 @@ import com.humolang.wifiless.ui.viewmodels.StartViewModel
 
 @Composable
 fun StartScreen(
+    onNavigateToMap: () -> Unit,
     startViewModel: StartViewModel =
         viewModel(factory = StartViewModel.Factory)
 ) {
@@ -44,6 +48,15 @@ fun StartScreen(
             dequeCapacity = startViewModel.dequeCapacity,
             modifier = Modifier.padding(top = 16.dp)
         )
+        Row(
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .align(alignment = Alignment.CenterHorizontally)
+        ) {
+            Button(onClick = onNavigateToMap) {
+                Text(text = "to map")
+            }
+        }
         Text(
             text = "IP Address: ${startUiState.ipAddress}",
             modifier = Modifier.padding(top = 16.dp)
