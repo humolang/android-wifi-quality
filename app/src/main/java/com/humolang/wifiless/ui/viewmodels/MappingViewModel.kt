@@ -38,6 +38,11 @@ class MappingViewModel(
             if (mappingTool.hasMagnetic) {
                 launch { collectMagnetic() }
             }
+            if (mappingTool.hasAccelerometer
+                && mappingTool.hasMagnetic) {
+
+                launch { collectPoints() }
+            }
         }
     }
 
@@ -77,6 +82,14 @@ class MappingViewModel(
         mappingTool.magnetic.collect { magnetic ->
             _mappingUiState.value = _mappingUiState.value.copy(
                 magnetic = magnetic
+            )
+        }
+    }
+
+    private suspend fun collectPoints() {
+        mappingTool.points.collect { points ->
+            _mappingUiState.value = _mappingUiState.value.copy(
+                points = points
             )
         }
     }
