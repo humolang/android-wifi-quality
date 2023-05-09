@@ -2,19 +2,24 @@ package com.humolang.wifiless
 
 import android.app.Application
 import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.net.wifi.WifiManager
+import com.humolang.wifiless.data.datasources.AccelerometerCallback
 import com.humolang.wifiless.data.datasources.IpCallback
 import com.humolang.wifiless.data.datasources.LinkSpeedValue
 import com.humolang.wifiless.data.datasources.RssiValue
 import com.humolang.wifiless.data.datasources.WifiCallback
+import com.humolang.wifiless.data.repositories.MappingTool
 import com.humolang.wifiless.data.repositories.WifiParameters
 
 class WiFilessApplication : Application() {
 
     lateinit var wifiParameters: WifiParameters
+    lateinit var mappingTool: MappingTool
 
     override fun onCreate() {
         super.onCreate()
@@ -47,6 +52,20 @@ class WiFilessApplication : Application() {
             ipCallback = ipCallback,
             rssiValue = rssiValue,
             linkSpeedValue = linkSpeedValue
+        )
+
+        val sensorManager = getSystemService(
+            Context.SENSOR_SERVICE
+        ) as SensorManager
+        val accelerometerSensor: Sensor? = sensorManager
+            .getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
+        val accelerometerCallback = AccelerometerCallback(
+            sensorManager = sensorManager,
+            accelerometerSensor = accelerometerSensor
+        )
+
+        mappingTool = MappingTool(
+            accelerometerCallback = accelerometerCallback
         )
     }
 }

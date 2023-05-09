@@ -18,7 +18,9 @@ class StartViewModel(
     private val wifiParameters: WifiParameters
 ) : ViewModel() {
 
-    private val _startUiState = MutableStateFlow(StartUiState())
+    private val _startUiState = MutableStateFlow(
+        StartUiState()
+    )
     val startUiState: StateFlow<StartUiState>
         get() = _startUiState.asStateFlow()
 

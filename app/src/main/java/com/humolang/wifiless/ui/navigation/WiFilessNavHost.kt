@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.humolang.wifiless.ui.screens.MapScreen
+import com.humolang.wifiless.ui.screens.MappingScreen
 import com.humolang.wifiless.ui.screens.StartScreen
 
 @Composable
@@ -18,6 +18,6 @@ fun WiFilessNavHost(navController: NavHostController) {
                 navController.navigate(MAP_SCREEN_STRING)
             })
         }
-        composable(MAP_SCREEN_STRING) { MapScreen() }
+        composable(MAP_SCREEN_STRING) { MappingScreen() }
     }
 }

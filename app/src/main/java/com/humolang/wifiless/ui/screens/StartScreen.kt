@@ -54,7 +54,7 @@ fun StartScreen(
                 .align(alignment = Alignment.CenterHorizontally)
         ) {
             Button(onClick = onNavigateToMap) {
-                Text(text = "to map")
+                Text(text = "to mapping screen")
             }
         }
         Text(
