@@ -20,7 +20,8 @@ class MappingViewModel(
 
     private val _mappingUiState = MutableStateFlow(
         MappingUiState(
-            hasAccelerometer = mappingTool.hasAccelerometer
+            hasAccelerometer = mappingTool.hasAccelerometer,
+            hasMagnetic = mappingTool.hasMagnetic
         )
     )
     val mappingUiState: StateFlow<MappingUiState>
@@ -33,6 +34,9 @@ class MappingViewModel(
                 launch { collectAcceleration() }
                 launch { collectVelocity() }
                 launch { collectDistance() }
+            }
+            if (mappingTool.hasMagnetic) {
+                launch { collectMagnetic() }
             }
         }
     }
@@ -65,6 +69,14 @@ class MappingViewModel(
         mappingTool.distance.collect { distance ->
             _mappingUiState.value = _mappingUiState.value.copy(
                 distance = distance
+            )
+        }
+    }
+
+    private suspend fun collectMagnetic() {
+        mappingTool.magnetic.collect { magnetic ->
+            _mappingUiState.value = _mappingUiState.value.copy(
+                magnetic = magnetic
             )
         }
     }

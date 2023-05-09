@@ -44,6 +44,8 @@ fun MappingScreen(
                     Text(text = "x = ${mappingUiState.acceleration.x} m/s2")
                     Text(text = "y = ${mappingUiState.acceleration.y} m/s2")
                     Text(text = "z = ${mappingUiState.acceleration.z} m/s2")
+                    Text(text = "time = ${mappingUiState.acceleration.time} s")
+                    Text(text = "time = ${mappingUiState.acceleration.timestamp} ns")
                 }
 
                 Text(
@@ -67,6 +69,19 @@ fun MappingScreen(
                     Text(text = "z = ${mappingUiState.distance.z} m")
                     Text(text = "time = ${mappingUiState.distance.time} s")
                 }
+            }
+        }
+
+        if (mappingUiState.hasMagnetic) {
+            Text(
+                text = "geomagnetic field",
+                modifier = Modifier.padding(top = 16.dp)
+            )
+            Column(modifier = Modifier.padding(top = 4.dp)) {
+                Text(text = "x = ${mappingUiState.magnetic.x} μT")
+                Text(text = "y = ${mappingUiState.magnetic.y} μT")
+                Text(text = "z = ${mappingUiState.magnetic.z} μT")
+                Text(text = "time = ${mappingUiState.magnetic.timestamp} ns")
             }
         }
     }

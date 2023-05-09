@@ -1,8 +1,10 @@
 package com.humolang.wifiless.data.repositories
 
 import com.humolang.wifiless.data.datasources.AccelerometerCallback
+import com.humolang.wifiless.data.datasources.MagneticCallback
 import com.humolang.wifiless.data.model.Acceleration
 import com.humolang.wifiless.data.model.Distance
+import com.humolang.wifiless.data.model.Magnetic
 import com.humolang.wifiless.data.model.Velocity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,11 +14,15 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.abs
 
 class MappingTool(
-    private val accelerometerCallback: AccelerometerCallback
+    private val accelerometerCallback: AccelerometerCallback,
+    private val magneticCallback: MagneticCallback
 ) {
 
     val hasAccelerometer: Boolean
         get() = accelerometerCallback.hasAccelerometer
+
+    val hasMagnetic: Boolean
+        get() = magneticCallback.hasMagnetic
 
     private var calibration = Acceleration()
     private var previousTimestamp = 0L
@@ -73,6 +79,10 @@ class MappingTool(
         }
     val distance: Flow<Distance>
         get() = _distance
+
+    private val _magnetic = magneticCallback.magnetic
+    val magnetic: Flow<Magnetic>
+        get() = _magnetic
 
     suspend fun calibrateAccelerometer() {
         var counter = 0

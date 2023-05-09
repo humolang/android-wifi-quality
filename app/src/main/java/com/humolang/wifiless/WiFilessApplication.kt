@@ -11,6 +11,7 @@ import android.net.wifi.WifiManager
 import com.humolang.wifiless.data.datasources.AccelerometerCallback
 import com.humolang.wifiless.data.datasources.IpCallback
 import com.humolang.wifiless.data.datasources.LinkSpeedValue
+import com.humolang.wifiless.data.datasources.MagneticCallback
 import com.humolang.wifiless.data.datasources.RssiValue
 import com.humolang.wifiless.data.datasources.WifiCallback
 import com.humolang.wifiless.data.repositories.MappingTool
@@ -57,6 +58,7 @@ class WiFilessApplication : Application() {
         val sensorManager = getSystemService(
             Context.SENSOR_SERVICE
         ) as SensorManager
+
         val accelerometerSensor: Sensor? = sensorManager
             .getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
         val accelerometerCallback = AccelerometerCallback(
@@ -64,8 +66,16 @@ class WiFilessApplication : Application() {
             accelerometerSensor = accelerometerSensor
         )
 
+        val magneticSensor: Sensor? = sensorManager
+            .getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+        val magneticCallback = MagneticCallback(
+            sensorManager = sensorManager,
+            magneticSensor = magneticSensor
+        )
+
         mappingTool = MappingTool(
-            accelerometerCallback = accelerometerCallback
+            accelerometerCallback = accelerometerCallback,
+            magneticCallback = magneticCallback
         )
     }
 }
