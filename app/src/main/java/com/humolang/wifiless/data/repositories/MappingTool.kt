@@ -2,18 +2,12 @@ package com.humolang.wifiless.data.repositories
 
 import com.humolang.wifiless.data.datasources.AccelerometerCallback
 import com.humolang.wifiless.data.datasources.MagneticCallback
-import com.humolang.wifiless.data.model.Acceleration
 import com.humolang.wifiless.data.model.Distance
-import com.humolang.wifiless.data.model.Magnetic
 import com.humolang.wifiless.data.model.MappingPoint
-import com.humolang.wifiless.data.model.Velocity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withTimeoutOrNull
-import kotlin.math.abs
 
 class MappingTool(
     private val accelerometerCallback: AccelerometerCallback,
@@ -26,101 +20,49 @@ class MappingTool(
     val hasMagnetic: Boolean
         get() = magneticCallback.hasMagnetic
 
-    private var calibration = Acceleration()
-    private var previousTimestamp = 0L
-    private var distanceCounter = Distance()
+    private val previousTimestamp = MutableStateFlow(0L)
+    private val distanceCounter = MutableStateFlow(Distance())
+    private val mappingPoints = MutableStateFlow(
+        mutableListOf<MappingPoint>()
+    )
 
-    private val _calibrated = MutableStateFlow(true)
-    val calibrated: StateFlow<Boolean>
-        get() = _calibrated
-
-    private val _acceleration = accelerometerCallback.acceleration
-        .map { withoutCalibration ->
-            if (previousTimestamp == 0L) {
-                previousTimestamp = withoutCalibration.timestamp
+    private val _points = accelerometerCallback.acceleration
+        .map { acceleration ->
+            if (previousTimestamp.value == 0L) {
+                previousTimestamp.value = acceleration.timestamp
             }
 
-            val calibrated = Acceleration(
-                x = withoutCalibration.x - calibration.x,
-                y = withoutCalibration.y - calibration.y,
-                z = withoutCalibration.z - calibration.z,
-                time = (withoutCalibration.timestamp - previousTimestamp)
-                        * 0.000000001, // from nanoseconds to seconds
-                timestamp = withoutCalibration.timestamp
+            val withTime = acceleration.copy(
+                time = (acceleration.timestamp - previousTimestamp.value)
+                        * 0.000000001
             )
 
-            previousTimestamp = withoutCalibration.timestamp
+            previousTimestamp.value = acceleration.timestamp
 
-            calibrated
+            withTime
         }
-    val acceleration: Flow<Acceleration>
-        get() = _acceleration
+        .map { acceleration ->
+            distanceCounter.value = Distance(
+                x = (acceleration.x * acceleration.time * acceleration.time)
+                        + distanceCounter.value.x,
+                y = (acceleration.y * acceleration.time * acceleration.time)
+                        + distanceCounter.value.y,
+                z = (acceleration.z * acceleration.time * acceleration.time)
+                        + distanceCounter.value.z,
+                time = acceleration.time + distanceCounter.value.time
+            )
+            distanceCounter.value
+        }
+        .combine(magneticCallback.magnetic) { distance, magnetic ->
+            val point = MappingPoint(
+                x = distance.x.toFloat(),
+                y = distance.y.toFloat()
+            )
 
-    private val _velocity = _acceleration.map { acceleration ->
-        val velocity = Velocity(
-            x = abs(acceleration.x) * acceleration.time,
-            y = abs(acceleration.y) * acceleration.time,
-            z = abs(acceleration.z) * acceleration.time,
-            time = acceleration.time
-        )
+            mappingPoints.value.add(point)
+            mappingPoints.value.toList()
+        }
 
-        velocity
-    }
-    val velocity: Flow<Velocity>
-        get() = _velocity
-
-    private val _distance = _velocity.map { velocity ->
-        distanceCounter = Distance(
-            x = (velocity.x * velocity.time) + distanceCounter.x,
-            y = (velocity.y * velocity.time) + distanceCounter.y,
-            z = (velocity.z * velocity.time) + distanceCounter.z,
-            time = velocity.time + distanceCounter.time
-        )
-
-        distanceCounter
-    }
-    val distance: Flow<Distance>
-        get() = _distance
-
-    private val _magnetic = magneticCallback.magnetic
-    val magnetic: Flow<Magnetic>
-        get() = _magnetic
-
-    private val pointsList = mutableListOf<MappingPoint>()
-
-    private val _points = combine(_distance, _magnetic) { distance, magnetic ->
-        val point = MappingPoint(
-            x = distance.x.toFloat() * 10,
-            y = distance.y.toFloat() * 10
-        )
-
-        pointsList.add(point)
-        pointsList.toList()
-    }
     val points: Flow<List<MappingPoint>>
         get() = _points
-
-    suspend fun calibrateAccelerometer() {
-        var counter = 0
-        var calibrationValue = Acceleration()
-
-        withTimeoutOrNull(5000L) {
-            accelerometerCallback.acceleration.collect { acceleration ->
-                calibrationValue = Acceleration(
-                    x = calibrationValue.x + acceleration.x,
-                    y = calibrationValue.y + acceleration.y,
-                    z = calibrationValue.z + acceleration.z
-                )
-                counter++
-            }
-        }
-
-        calibration = Acceleration(
-            x = calibrationValue.x / counter,
-            y = calibrationValue.y / counter,
-            z = calibrationValue.z / counter
-        )
-
-        _calibrated.value = true
-    }
 }
