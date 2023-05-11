@@ -33,6 +33,7 @@ class MappingViewModel(
                 && mappingTool.hasMagnetic) {
 
                 launch { collectPoints() }
+                launch { collectOrientation() }
             }
         }
     }
@@ -41,6 +42,14 @@ class MappingViewModel(
         mappingTool.points.collect { points ->
             _mappingUiState.value = _mappingUiState.value.copy(
                 points = points
+            )
+        }
+    }
+
+    private suspend fun collectOrientation() {
+        mappingTool.orientation.collect { orientation ->
+            _mappingUiState.value = _mappingUiState.value.copy(
+                orientation = orientation
             )
         }
     }

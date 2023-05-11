@@ -2,8 +2,10 @@ package com.humolang.wifiless.data.repositories
 
 import com.humolang.wifiless.data.datasources.AccelerometerCallback
 import com.humolang.wifiless.data.datasources.MagneticCallback
+import com.humolang.wifiless.data.datasources.OrientationCallback
 import com.humolang.wifiless.data.model.Distance
 import com.humolang.wifiless.data.model.MappingPoint
+import com.humolang.wifiless.data.model.Orientation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -11,7 +13,8 @@ import kotlinx.coroutines.flow.map
 
 class MappingTool(
     private val accelerometerCallback: AccelerometerCallback,
-    private val magneticCallback: MagneticCallback
+    private val magneticCallback: MagneticCallback,
+    private val orientationCallback: OrientationCallback
 ) {
 
     val hasAccelerometer: Boolean
@@ -61,4 +64,8 @@ class MappingTool(
 
     val points: Flow<List<MappingPoint>>
         get() = _points
+
+    private val _orientation = orientationCallback.orientation
+    val orientation: Flow<Orientation>
+        get() = _orientation
 }

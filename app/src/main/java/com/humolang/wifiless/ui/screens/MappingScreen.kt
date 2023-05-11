@@ -51,7 +51,7 @@ fun MappingScreen(
             Canvas(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(512.dp)
+                    .height(256.dp)
                     .padding(top = 16.dp)
                     .border(
                         2.dp,
@@ -92,6 +92,20 @@ fun MappingScreen(
             )
             Text(
                 text = "z = ${mappingUiState.points.lastOrNull()?.magnetiz} μT",
+                modifier = Modifier.padding(top = 4.dp)
+            )
+
+            Text(text = "orientation", modifier = Modifier.padding(top = 16.dp))
+            Text(
+                text = "azimuth = ${mappingUiState.orientation.azimuth}",
+                modifier = Modifier.padding(top = 4.dp)
+            )
+            Text(
+                text = "pitch = ${mappingUiState.orientation.pitch}",
+                modifier = Modifier.padding(top = 4.dp)
+            )
+            Text(
+                text = "roll = ${mappingUiState.orientation.roll}",
                 modifier = Modifier.padding(top = 4.dp)
             )
         }

@@ -12,6 +12,7 @@ import com.humolang.wifiless.data.datasources.AccelerometerCallback
 import com.humolang.wifiless.data.datasources.IpCallback
 import com.humolang.wifiless.data.datasources.LinkSpeedValue
 import com.humolang.wifiless.data.datasources.MagneticCallback
+import com.humolang.wifiless.data.datasources.OrientationCallback
 import com.humolang.wifiless.data.datasources.RssiValue
 import com.humolang.wifiless.data.datasources.WifiCallback
 import com.humolang.wifiless.data.repositories.MappingTool
@@ -59,11 +60,11 @@ class WiFilessApplication : Application() {
             Context.SENSOR_SERVICE
         ) as SensorManager
 
-        val accelerometerSensor: Sensor? = sensorManager
+        val linearAccelerationSensor: Sensor? = sensorManager
             .getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
         val accelerometerCallback = AccelerometerCallback(
             sensorManager = sensorManager,
-            accelerometerSensor = accelerometerSensor
+            accelerometerSensor = linearAccelerationSensor
         )
 
         val magneticSensor: Sensor? = sensorManager
@@ -73,9 +74,18 @@ class WiFilessApplication : Application() {
             magneticSensor = magneticSensor
         )
 
+        val accelerationSensor: Sensor? = sensorManager
+            .getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        val orientationCallback = OrientationCallback(
+            sensorManager = sensorManager,
+            accelerometerSensor = accelerationSensor,
+            magneticSensor = magneticSensor
+        )
+
         mappingTool = MappingTool(
             accelerometerCallback = accelerometerCallback,
-            magneticCallback = magneticCallback
+            magneticCallback = magneticCallback,
+            orientationCallback = orientationCallback
         )
     }
 }
