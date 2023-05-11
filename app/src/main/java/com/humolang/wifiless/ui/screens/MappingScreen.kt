@@ -34,11 +34,15 @@ fun MappingScreen(
 
             Text(text = "distance", modifier = Modifier.padding(top = 16.dp))
             Text(
-                text = "x = ${mappingUiState.distance.x} m",
+                text = "x = ${mappingUiState.points.lastOrNull()?.x} m",
                 modifier = Modifier.padding(top = 4.dp)
             )
             Text(
-                text = "y = ${mappingUiState.distance.y} m",
+                text = "y = ${mappingUiState.points.lastOrNull()?.y} m",
+                modifier = Modifier.padding(top = 4.dp)
+            )
+            Text(
+                text = "z = ${mappingUiState.points.lastOrNull()?.z} m",
                 modifier = Modifier.padding(top = 4.dp)
             )
 
@@ -75,6 +79,20 @@ fun MappingScreen(
                         style = Stroke(width = 6f)
                     )
                 }
+            )
+
+            Text(text = "magnetic", modifier = Modifier.padding(top = 16.dp))
+            Text(
+                text = "x = ${mappingUiState.points.lastOrNull()?.magnetix} μT",
+                modifier = Modifier.padding(top = 4.dp)
+            )
+            Text(
+                text = "y = ${mappingUiState.points.lastOrNull()?.magnetiy} μT",
+                modifier = Modifier.padding(top = 4.dp)
+            )
+            Text(
+                text = "z = ${mappingUiState.points.lastOrNull()?.magnetiz} μT",
+                modifier = Modifier.padding(top = 4.dp)
             )
         }
     }

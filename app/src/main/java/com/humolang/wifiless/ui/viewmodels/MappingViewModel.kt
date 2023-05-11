@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.humolang.wifiless.WiFilessApplication
-import com.humolang.wifiless.data.model.Distance
 import com.humolang.wifiless.data.repositories.MappingTool
 import com.humolang.wifiless.ui.states.MappingUiState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,11 +40,7 @@ class MappingViewModel(
     private suspend fun collectPoints() {
         mappingTool.points.collect { points ->
             _mappingUiState.value = _mappingUiState.value.copy(
-                points = points,
-                distance = Distance(
-                    x = points.last().x.toDouble(),
-                    y = points.last().y.toDouble()
-                )
+                points = points
             )
         }
     }

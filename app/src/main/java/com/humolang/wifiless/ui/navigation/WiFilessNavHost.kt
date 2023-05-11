@@ -11,7 +11,7 @@ import com.humolang.wifiless.ui.screens.StartScreen
 fun WiFilessNavHost(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = MAPPING_SCREEN_STRING
+        startDestination = START_SCREEN_STRING
     ) {
         composable(START_SCREEN_STRING) {
             StartScreen(onNavigateToMap = {

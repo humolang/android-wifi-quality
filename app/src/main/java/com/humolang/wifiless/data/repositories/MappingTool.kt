@@ -28,35 +28,31 @@ class MappingTool(
 
     private val _points = accelerometerCallback.acceleration
         .map { acceleration ->
-            if (previousTimestamp.value == 0L) {
+            if (previousTimestamp.value == 0L)
                 previousTimestamp.value = acceleration.timestamp
-            }
-
-            val withTime = acceleration.copy(
-                time = (acceleration.timestamp - previousTimestamp.value)
-                        * 0.000000001
-            )
-
+            val time = (acceleration.timestamp -
+                    previousTimestamp.value) * 0.000000001
             previousTimestamp.value = acceleration.timestamp
 
-            withTime
-        }
-        .map { acceleration ->
             distanceCounter.value = Distance(
-                x = (acceleration.x * acceleration.time * acceleration.time)
+                x = (acceleration.x * time * time)
                         + distanceCounter.value.x,
-                y = (acceleration.y * acceleration.time * acceleration.time)
+                y = (acceleration.y * time * time)
                         + distanceCounter.value.y,
-                z = (acceleration.z * acceleration.time * acceleration.time)
+                z = (acceleration.z * time * time)
                         + distanceCounter.value.z,
-                time = acceleration.time + distanceCounter.value.time
+                time = time + distanceCounter.value.time
             )
             distanceCounter.value
         }
         .combine(magneticCallback.magnetic) { distance, magnetic ->
             val point = MappingPoint(
                 x = distance.x.toFloat(),
-                y = distance.y.toFloat()
+                y = distance.y.toFloat(),
+                z = distance.z.toFloat(),
+                magnetix = magnetic.x.toFloat(),
+                magnetiy = magnetic.y.toFloat(),
+                magnetiz = magnetic.z.toFloat(),
             )
 
             mappingPoints.value.add(point)
