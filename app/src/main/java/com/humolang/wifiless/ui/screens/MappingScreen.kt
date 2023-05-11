@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.humolang.wifiless.ui.viewmodels.MappingViewModel
+import kotlin.math.abs
 
 @Composable
 fun MappingScreen(
@@ -32,17 +33,13 @@ fun MappingScreen(
         if (mappingUiState.hasAccelerometer
             && mappingUiState.hasMagnetic) {
 
-            Text(text = "distance", modifier = Modifier.padding(top = 16.dp))
+            Text(text = "mapping point", modifier = Modifier.padding(top = 16.dp))
             Text(
-                text = "x = ${mappingUiState.points.lastOrNull()?.x} m",
+                text = "x = ${mappingUiState.points.lastOrNull()?.x}",
                 modifier = Modifier.padding(top = 4.dp)
             )
             Text(
-                text = "y = ${mappingUiState.points.lastOrNull()?.y} m",
-                modifier = Modifier.padding(top = 4.dp)
-            )
-            Text(
-                text = "z = ${mappingUiState.points.lastOrNull()?.z} m",
+                text = "y = ${mappingUiState.points.lastOrNull()?.y}",
                 modifier = Modifier.padding(top = 4.dp)
             )
 
@@ -66,10 +63,39 @@ fun MappingScreen(
                         y = size.height / 2
                     )
 
+                    var maxHorizontal = Float.MIN_VALUE
+                    var maxVertical = Float.MIN_VALUE
+
+                    var minHorizontal = Float.MAX_VALUE
+                    var minVertical = Float.MAX_VALUE
+
+                    for (point in mappingUiState.points) {
+                        if (maxHorizontal < point.x)
+                            maxHorizontal = point.x
+                        if (maxVertical < point.y)
+                            maxVertical = point.y
+                        if (minHorizontal > point.x)
+                            minHorizontal = point.x
+                        if (minVertical > point.y)
+                            minVertical = point.y
+                    }
+
+                    if (maxHorizontal < 0)
+                        maxHorizontal = abs(maxHorizontal)
+                    if (maxVertical < 0)
+                        maxVertical = abs(maxVertical)
+                    if (minHorizontal < 0)
+                        minHorizontal = abs(minHorizontal)
+                    if (minVertical < 0)
+                        minVertical = abs(minVertical)
+
+                    val horizontalRange = minHorizontal + maxHorizontal
+                    val verticalRange = minVertical + maxVertical
+
                     for (point in mappingUiState.points) {
                         path.lineTo(
-                            size.width / 2 + point.x,
-                            size.height / 2 + point.y
+                            size.width / 2 + (point.x / horizontalRange) * (size.width / 2),
+                            size.height / 2 + (point.y / verticalRange) * (size.height / 2)
                         )
                     }
 
@@ -79,34 +105,6 @@ fun MappingScreen(
                         style = Stroke(width = 6f)
                     )
                 }
-            )
-
-            Text(text = "magnetic", modifier = Modifier.padding(top = 16.dp))
-            Text(
-                text = "x = ${mappingUiState.points.lastOrNull()?.magnetix} μT",
-                modifier = Modifier.padding(top = 4.dp)
-            )
-            Text(
-                text = "y = ${mappingUiState.points.lastOrNull()?.magnetiy} μT",
-                modifier = Modifier.padding(top = 4.dp)
-            )
-            Text(
-                text = "z = ${mappingUiState.points.lastOrNull()?.magnetiz} μT",
-                modifier = Modifier.padding(top = 4.dp)
-            )
-
-            Text(text = "orientation", modifier = Modifier.padding(top = 16.dp))
-            Text(
-                text = "azimuth = ${mappingUiState.orientation.azimuth}",
-                modifier = Modifier.padding(top = 4.dp)
-            )
-            Text(
-                text = "pitch = ${mappingUiState.orientation.pitch}",
-                modifier = Modifier.padding(top = 4.dp)
-            )
-            Text(
-                text = "roll = ${mappingUiState.orientation.roll}",
-                modifier = Modifier.padding(top = 4.dp)
             )
         }
     }

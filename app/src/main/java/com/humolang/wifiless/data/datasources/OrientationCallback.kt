@@ -107,9 +107,9 @@ class OrientationCallback(
                 SensorManager.getOrientation(rotation, orientationArray)
 
                 Orientation(
-                    azimuth = orientationArray[0],
-                    pitch = orientationArray[1],
-                    roll = orientationArray[2]
+                    azimuth = orientationArray[0].toDouble(),
+                    pitch = orientationArray[1].toDouble(),
+                    roll = orientationArray[2].toDouble()
                 )
             } else {
                 Orientation()

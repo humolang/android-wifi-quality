@@ -5,11 +5,12 @@ import com.humolang.wifiless.data.datasources.MagneticCallback
 import com.humolang.wifiless.data.datasources.OrientationCallback
 import com.humolang.wifiless.data.model.Distance
 import com.humolang.wifiless.data.model.MappingPoint
-import com.humolang.wifiless.data.model.Orientation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlin.math.PI
+import kotlin.math.sin
 
 class MappingTool(
     private val accelerometerCallback: AccelerometerCallback,
@@ -48,14 +49,24 @@ class MappingTool(
             )
             distanceCounter.value
         }
-        .combine(magneticCallback.magnetic) { distance, magnetic ->
+        .combine(orientationCallback.orientation) { distance, orientation ->
+            val alphaAngle = when (orientation.azimuth) {
+                in (PI / 2)..-PI -> PI - orientation.azimuth
+                in -PI..(-PI / 2) -> -PI - orientation.azimuth
+                else -> orientation.azimuth
+            }
+
+//            val alphaAngle = orientation.azimuth
+            val betaAngle = PI / 2.0
+            val gammaAngle = PI - (alphaAngle + betaAngle)
+
+            val bSide = distance.y
+            val aSide = (bSide * sin(alphaAngle)) / sin(betaAngle)
+            val cSide = (aSide * sin(gammaAngle)) / sin(alphaAngle)
+
             val point = MappingPoint(
-                x = distance.x.toFloat(),
-                y = distance.y.toFloat(),
-                z = distance.z.toFloat(),
-                magnetix = magnetic.x.toFloat(),
-                magnetiy = magnetic.y.toFloat(),
-                magnetiz = magnetic.z.toFloat(),
+                x = aSide.toFloat(),
+                y = cSide.toFloat()
             )
 
             mappingPoints.value.add(point)
@@ -64,8 +75,4 @@ class MappingTool(
 
     val points: Flow<List<MappingPoint>>
         get() = _points
-
-    private val _orientation = orientationCallback.orientation
-    val orientation: Flow<Orientation>
-        get() = _orientation
 }
