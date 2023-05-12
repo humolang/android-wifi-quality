@@ -42,6 +42,10 @@ fun MappingScreen(
                 text = "y = ${mappingUiState.points.lastOrNull()?.y}",
                 modifier = Modifier.padding(top = 4.dp)
             )
+            Text(
+                text = "distance = ${mappingUiState.points.lastOrNull()?.distance} m",
+                modifier = Modifier.padding(top = 4.dp)
+            )
 
             val pathColor = MaterialTheme.colorScheme.onBackground
 
