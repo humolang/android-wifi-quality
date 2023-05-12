@@ -30,7 +30,8 @@ class MappingViewModel(
     init {
         viewModelScope.launch {
             if (mappingTool.hasAccelerometer
-                && mappingTool.hasMagnetic) {
+                && mappingTool.hasMagnetic
+                && mappingTool.hasGyroscope) {
 
                 launch { collectPoints() }
             }

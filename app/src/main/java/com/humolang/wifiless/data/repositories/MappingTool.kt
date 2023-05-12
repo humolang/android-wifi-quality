@@ -1,6 +1,7 @@
 package com.humolang.wifiless.data.repositories
 
 import com.humolang.wifiless.data.datasources.AccelerometerCallback
+import com.humolang.wifiless.data.datasources.GyroscopeCallback
 import com.humolang.wifiless.data.datasources.MagneticCallback
 import com.humolang.wifiless.data.datasources.OrientationCallback
 import com.humolang.wifiless.data.model.Distance
@@ -16,7 +17,8 @@ import kotlin.math.sin
 class MappingTool(
     private val accelerometerCallback: AccelerometerCallback,
     private val magneticCallback: MagneticCallback,
-    private val orientationCallback: OrientationCallback
+    private val orientationCallback: OrientationCallback,
+    private val gyroscopeCallback: GyroscopeCallback
 ) {
 
     val hasAccelerometer: Boolean
@@ -24,6 +26,9 @@ class MappingTool(
 
     val hasMagnetic: Boolean
         get() = magneticCallback.hasMagnetic
+
+    val hasGyroscope: Boolean
+        get() = gyroscopeCallback.hasGyroscope
 
     private val previousTimestamp = MutableStateFlow(0L)
     private val velocityCounter = MutableStateFlow(Velocity())
@@ -74,7 +79,12 @@ class MappingTool(
                 distance = bSide
             )
 
-            mappingPoints.value.add(point)
+            point
+        }
+        .combine(gyroscopeCallback.gyroscope) { point, gyroscope ->
+            if (gyroscope.y in -0.0001..0.0001) {
+                mappingPoints.value.add(point)
+            }
             mappingPoints.value.toList()
         }
 

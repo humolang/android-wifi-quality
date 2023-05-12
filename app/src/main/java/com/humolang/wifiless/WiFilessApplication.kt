@@ -9,6 +9,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.net.wifi.WifiManager
 import com.humolang.wifiless.data.datasources.AccelerometerCallback
+import com.humolang.wifiless.data.datasources.GyroscopeCallback
 import com.humolang.wifiless.data.datasources.IpCallback
 import com.humolang.wifiless.data.datasources.LinkSpeedValue
 import com.humolang.wifiless.data.datasources.MagneticCallback
@@ -82,10 +83,18 @@ class WiFilessApplication : Application() {
             magneticSensor = magneticSensor
         )
 
+        val gyroscopeSensor: Sensor? = sensorManager
+            .getDefaultSensor(Sensor.TYPE_GYROSCOPE)
+        val gyroscopeCallback = GyroscopeCallback(
+            sensorManager = sensorManager,
+            gyroscopeSensor = gyroscopeSensor
+        )
+
         mappingTool = MappingTool(
             accelerometerCallback = accelerometerCallback,
             magneticCallback = magneticCallback,
-            orientationCallback = orientationCallback
+            orientationCallback = orientationCallback,
+            gyroscopeCallback = gyroscopeCallback
         )
     }
 }

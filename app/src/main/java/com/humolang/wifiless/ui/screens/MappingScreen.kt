@@ -43,7 +43,7 @@ fun MappingScreen(
                 modifier = Modifier.padding(top = 4.dp)
             )
             Text(
-                text = "distance = ${mappingUiState.points.lastOrNull()?.distance} m",
+                text = "distance = ${mappingUiState.points.lastOrNull()?.distance}",
                 modifier = Modifier.padding(top = 4.dp)
             )
 
