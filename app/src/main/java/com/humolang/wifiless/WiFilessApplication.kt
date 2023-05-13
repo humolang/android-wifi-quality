@@ -10,6 +10,7 @@ import com.humolang.wifiless.data.datasources.IpCallback
 import com.humolang.wifiless.data.datasources.LinkSpeedValue
 import com.humolang.wifiless.data.datasources.RssiValue
 import com.humolang.wifiless.data.datasources.WifiCallback
+import com.humolang.wifiless.data.model.MappingSpace
 import com.humolang.wifiless.data.repositories.MappingTool
 import com.humolang.wifiless.data.repositories.PlanningTool
 import com.humolang.wifiless.data.repositories.WifiParameters
@@ -53,7 +54,12 @@ class WiFilessApplication : Application() {
             linkSpeedValue = linkSpeedValue
         )
 
-        planningTool = PlanningTool()
+        val mappingSpace = MappingSpace()
+
+        planningTool = PlanningTool(
+            mappingSpace = mappingSpace
+        )
+
         mappingTool = MappingTool()
     }
 }
