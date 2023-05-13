@@ -1,9 +1,7 @@
 package com.humolang.wifiless.ui.states
 
-import com.humolang.wifiless.data.model.MappingPoint
+import com.humolang.wifiless.data.model.MappingBlock
 
 data class MappingUiState(
-    val hasAccelerometer: Boolean,
-    val hasMagnetic: Boolean,
-    val points: List<MappingPoint> = emptyList()
+    val blocks: List<MappingBlock> = emptyList()
 )

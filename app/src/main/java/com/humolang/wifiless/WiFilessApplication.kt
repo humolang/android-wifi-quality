@@ -2,18 +2,12 @@ package com.humolang.wifiless
 
 import android.app.Application
 import android.content.Context
-import android.hardware.Sensor
-import android.hardware.SensorManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.net.wifi.WifiManager
-import com.humolang.wifiless.data.datasources.AccelerometerCallback
-import com.humolang.wifiless.data.datasources.GyroscopeCallback
 import com.humolang.wifiless.data.datasources.IpCallback
 import com.humolang.wifiless.data.datasources.LinkSpeedValue
-import com.humolang.wifiless.data.datasources.MagneticCallback
-import com.humolang.wifiless.data.datasources.OrientationCallback
 import com.humolang.wifiless.data.datasources.RssiValue
 import com.humolang.wifiless.data.datasources.WifiCallback
 import com.humolang.wifiless.data.repositories.MappingTool
@@ -57,44 +51,6 @@ class WiFilessApplication : Application() {
             linkSpeedValue = linkSpeedValue
         )
 
-        val sensorManager = getSystemService(
-            Context.SENSOR_SERVICE
-        ) as SensorManager
-
-        val linearAccelerationSensor: Sensor? = sensorManager
-            .getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
-        val accelerometerCallback = AccelerometerCallback(
-            sensorManager = sensorManager,
-            accelerometerSensor = linearAccelerationSensor
-        )
-
-        val magneticSensor: Sensor? = sensorManager
-            .getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
-        val magneticCallback = MagneticCallback(
-            sensorManager = sensorManager,
-            magneticSensor = magneticSensor
-        )
-
-        val accelerationSensor: Sensor? = sensorManager
-            .getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        val orientationCallback = OrientationCallback(
-            sensorManager = sensorManager,
-            accelerometerSensor = accelerationSensor,
-            magneticSensor = magneticSensor
-        )
-
-        val gyroscopeSensor: Sensor? = sensorManager
-            .getDefaultSensor(Sensor.TYPE_GYROSCOPE)
-        val gyroscopeCallback = GyroscopeCallback(
-            sensorManager = sensorManager,
-            gyroscopeSensor = gyroscopeSensor
-        )
-
-        mappingTool = MappingTool(
-            accelerometerCallback = accelerometerCallback,
-            magneticCallback = magneticCallback,
-            orientationCallback = orientationCallback,
-            gyroscopeCallback = gyroscopeCallback
-        )
+        mappingTool = MappingTool()
     }
 }
