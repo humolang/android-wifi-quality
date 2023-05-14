@@ -74,7 +74,7 @@ fun StartScreen(
 }
 
 @Composable
-fun RssiGraph(
+private fun RssiGraph(
     latestRssi: Int,
     rssiValues: ArrayDeque<Int>,
     dequeCapacity: Int,
@@ -91,7 +91,7 @@ fun RssiGraph(
 }
 
 @Composable
-fun SpeedGraph(
+private fun SpeedGraph(
     latestSpeed: Int,
     speedValues: ArrayDeque<Int>,
     dequeCapacity: Int,
@@ -108,7 +108,7 @@ fun SpeedGraph(
 }
 
 @Composable
-fun AutoUpdateGraph(
+private fun AutoUpdateGraph(
     points: ArrayDeque<Int>,
     dequeCapacity: Int,
     modifier: Modifier = Modifier

@@ -181,7 +181,7 @@ private fun PlanningField(
 }
 
 @Composable
-fun RoomPlan(
+private fun RoomPlan(
     columns: Int,
     rows: Int,
     blocks: Map<Pair<Int, Int>, MappingBlock>,
