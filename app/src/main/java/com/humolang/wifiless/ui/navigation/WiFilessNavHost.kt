@@ -16,16 +16,19 @@ fun WiFilessNavHost(navController: NavHostController) {
     ) {
         composable(START_SCREEN_STRING) {
             StartScreen(
-                onNavigateToPlan = {
+                navigateToPlanning = {
                     navController.navigate(PLANNING_SCREEN_STRING)
                 },
-                onNavigateToMap = {
+                navigateToMapping = {
                     navController.navigate(MAPPING_SCREEN_STRING)
                 }
             )
         }
         composable(PLANNING_SCREEN_STRING) { PlanningScreen(
-            onCancelClicked = { navController.popBackStack() }
+            onCancelClicked = { navController.popBackStack() },
+            navigateToMapping = {
+                navController.navigate(MAPPING_SCREEN_STRING)
+            }
         ) }
         composable(MAPPING_SCREEN_STRING) { MappingScreen() }
     }

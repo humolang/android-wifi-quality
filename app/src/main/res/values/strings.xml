@@ -5,4 +5,6 @@
     <string name="width">Width, m</string>
     <string name="cancel">Cancel</string>
     <string name="next">Next</string>
+    <string name="back">Back</string>
+    <string name="save">Save</string>
 </resources>

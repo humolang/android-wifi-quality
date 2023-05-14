@@ -35,6 +35,14 @@ class PlanningViewModel(
         )
     }
 
+    fun removeParameters() {
+        _planningUiState.value = _planningUiState.value.copy(
+            parametersEntered = false
+        )
+    }
+
+    fun savePlan() {  }
+
     companion object {
 
         val Factory: ViewModelProvider.Factory = viewModelFactory {

@@ -2,6 +2,7 @@ package com.humolang.wifiless.ui.screens
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -35,10 +37,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.humolang.wifiless.R
 import com.humolang.wifiless.data.model.MappingBlock
 import com.humolang.wifiless.ui.viewmodels.PlanningViewModel
+import kotlin.math.abs
 
 @Composable
 fun PlanningScreen(
     onCancelClicked: () -> Unit,
+    navigateToMapping: () -> Unit,
     planningViewModel: PlanningViewModel =
         viewModel(factory = PlanningViewModel.Factory)
 ) {
@@ -49,7 +53,8 @@ fun PlanningScreen(
         RoomParameters(
             onCancelClicked = { onCancelClicked() },
             onNextClicked = { length, width ->
-                planningViewModel.saveParameters(length, width)
+                planningViewModel
+                    .saveParameters(length, width)
             },
             modifier = Modifier
                 .padding(16.dp)
@@ -60,6 +65,9 @@ fun PlanningScreen(
             columns = planningUiState.columns,
             rows = planningUiState.rows,
             blocks = planningUiState.blocks,
+            onBackClicked = { planningViewModel.removeParameters() },
+            onSaveClicked = { planningViewModel.savePlan() },
+            onNextClicked = { navigateToMapping() },
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxSize()
@@ -134,6 +142,49 @@ private fun PlanningField(
     columns: Int,
     rows: Int,
     blocks: Map<Pair<Int, Int>, MappingBlock>,
+    onBackClicked: () -> Unit,
+    onSaveClicked: () -> Unit,
+    onNextClicked: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier
+    ) {
+        RoomPlan(
+            columns = columns,
+            rows = rows,
+            blocks = blocks
+        )
+
+        Row(modifier = Modifier.padding(top = 16.dp)) {
+            OutlinedButton(
+                onClick = { onBackClicked() }
+            ) {
+                Text(text = stringResource(id = R.string.back))
+            }
+            Button(
+                onClick = { onSaveClicked() },
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Text(text = stringResource(id = R.string.save))
+            }
+            Button(
+                onClick = { onNextClicked() },
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Text(text = stringResource(id = R.string.next))
+            }
+        }
+    }
+}
+
+@Composable
+fun RoomPlan(
+    columns: Int,
+    rows: Int,
+    blocks: Map<Pair<Int, Int>, MappingBlock>,
     modifier: Modifier = Modifier
 ) {
     var scale by remember { mutableStateOf(1f) }
@@ -185,8 +236,30 @@ private fun Block(
     block: MappingBlock,
     modifier: Modifier = Modifier
 ) {
-    val borderColor = MaterialTheme.colorScheme.onBackground
-    val rectColor = MaterialTheme.colorScheme.tertiary
+    val tertiaryBorder = MaterialTheme.colorScheme.tertiary
+    val tertiaryRectangle = MaterialTheme.colorScheme.tertiaryContainer
+
+    val hasRssi = abs(block.rssi) in 0..100
+    val rssiGreen = abs(block.rssi.toFloat()) / 100
+
+    val borderColor = Color(
+        tertiaryBorder.red,
+        if (hasRssi) rssiGreen else tertiaryBorder.green,
+        tertiaryBorder.blue,
+        tertiaryBorder.alpha,
+        tertiaryBorder.colorSpace
+    )
+
+    val rectangleColor = Color(
+        tertiaryRectangle.red,
+        if (hasRssi) rssiGreen else tertiaryRectangle.green,
+        tertiaryRectangle.blue,
+        tertiaryRectangle.alpha,
+        tertiaryRectangle.colorSpace
+    )
+
+    val selectedColor = MaterialTheme.colorScheme.primaryContainer
+    var selected by remember { mutableStateOf(false) }
 
     Canvas(
         modifier = modifier
@@ -194,10 +267,15 @@ private fun Block(
                 2.dp,
                 borderColor,
                 RoundedCornerShape(4.dp)
-            ),
+            )
+            .clickable {
+                selected = !selected
+            },
         onDraw = {
             drawRect(
-                color = rectColor
+                color = if (selected)
+                    selectedColor
+                else rectangleColor
             )
         }
     )
