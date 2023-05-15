@@ -16,9 +16,10 @@ class MappingViewModel(
     private val mappingTool: MappingTool
 ) : ViewModel() {
 
-    private val _mappingUiState = MutableStateFlow(
-        MappingUiState()
-    )
+    private val _mappingUiState =
+        MutableStateFlow(MappingUiState(
+            blocks = emptyMap()
+        ))
     val mappingUiState: StateFlow<MappingUiState>
         get() = _mappingUiState.asStateFlow()
 

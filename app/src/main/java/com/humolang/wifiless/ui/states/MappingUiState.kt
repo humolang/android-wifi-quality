@@ -1,7 +1,8 @@
 package com.humolang.wifiless.ui.states
 
-import com.humolang.wifiless.data.model.MappingBlock
+import com.humolang.wifiless.data.datasources.db.entities.Block
+import com.humolang.wifiless.data.datasources.db.entities.Column
 
 data class MappingUiState(
-    val blocks: List<MappingBlock> = emptyList()
+    val blocks: Map<Column, List<Block>>
 )

@@ -1,22 +1,11 @@
 package com.humolang.wifiless.data.repositories
 
-import com.humolang.wifiless.data.model.MappingBlock
-import com.humolang.wifiless.data.model.MappingSpace
+import com.humolang.wifiless.data.datasources.db.dao.BlockDao
+import com.humolang.wifiless.data.datasources.db.dao.ColumnDao
+import com.humolang.wifiless.data.datasources.db.dao.HeatDao
 
 class PlanningTool(
-    private val mappingSpace: MappingSpace
-) {
-
-    val length: Int
-        get() = mappingSpace.length
-
-    val width: Int
-        get() = mappingSpace.width
-
-    val blocks: Map<Pair<Int, Int>, MappingBlock>
-        get() = mappingSpace.blocks
-
-    fun saveParameters(length: Int, width: Int) {
-        mappingSpace.initial(length, width)
-    }
-}
+    private val heatDao: HeatDao,
+    private val columnDao: ColumnDao,
+    private val blockDao: BlockDao
+) {  }

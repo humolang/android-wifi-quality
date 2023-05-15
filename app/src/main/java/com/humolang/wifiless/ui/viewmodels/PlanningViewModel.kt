@@ -17,31 +17,11 @@ class PlanningViewModel(
 ) : ViewModel() {
 
     private val _planningUiState =
-        MutableStateFlow(PlanningUiState())
+        MutableStateFlow(PlanningUiState(
+            blocks = emptyMap()
+        ))
     val planningUiState: StateFlow<PlanningUiState>
         get() = _planningUiState.asStateFlow()
-
-    fun saveParameters(lengthInput: String, widthInput: String) {
-        val length = lengthInput.toIntOrNull() ?: 1
-        val width = widthInput.toIntOrNull() ?: 1
-
-        planningTool.saveParameters(length, width)
-
-        _planningUiState.value = _planningUiState.value.copy(
-            parametersEntered = true,
-            columns = planningTool.length,
-            rows = planningTool.width,
-            blocks = planningTool.blocks
-        )
-    }
-
-    fun removeParameters() {
-        _planningUiState.value = _planningUiState.value.copy(
-            parametersEntered = false
-        )
-    }
-
-    fun savePlan() {  }
 
     companion object {
 
