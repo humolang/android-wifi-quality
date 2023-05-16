@@ -11,6 +11,7 @@ import com.humolang.wifiless.data.datasources.LinkSpeedValue
 import com.humolang.wifiless.data.datasources.RssiValue
 import com.humolang.wifiless.data.datasources.WifiCallback
 import com.humolang.wifiless.data.datasources.db.MappingDatabase
+import com.humolang.wifiless.data.repositories.HeatsRepository
 import com.humolang.wifiless.data.repositories.MappingTool
 import com.humolang.wifiless.data.repositories.PlanningTool
 import com.humolang.wifiless.data.repositories.WifiParameters
@@ -20,6 +21,7 @@ class WiFilessApplication : Application() {
     lateinit var wifiParameters: WifiParameters
     lateinit var planningTool: PlanningTool
     lateinit var mappingTool: MappingTool
+    lateinit var heatsRepository: HeatsRepository
 
     override fun onCreate() {
         super.onCreate()
@@ -68,6 +70,10 @@ class WiFilessApplication : Application() {
             columnDao = database.columnDao(),
             blockDao = database.blockDao(),
             rssiValue = rssiValue
+        )
+
+        heatsRepository = HeatsRepository(
+            heatDao = database.heatDao()
         )
     }
 }

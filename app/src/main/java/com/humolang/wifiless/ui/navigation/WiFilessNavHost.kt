@@ -6,6 +6,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.humolang.wifiless.ui.screens.HeatsScreen
 import com.humolang.wifiless.ui.screens.MappingScreen
 import com.humolang.wifiless.ui.screens.PlanningScreen
 import com.humolang.wifiless.ui.screens.StartScreen
@@ -20,6 +21,9 @@ fun WiFilessNavHost(navController: NavHostController) {
             StartScreen(
                 navigateToPlanning = {
                     navController.navigate(PLANNING_SCREEN_STRING)
+                },
+                navigateToHeats = {
+                    navController.navigate(HEATS_SCREEN_STRING)
                 }
             )
         }
@@ -50,6 +54,13 @@ fun WiFilessNavHost(navController: NavHostController) {
                     }
                 )
             }
+        }
+        composable(HEATS_SCREEN_STRING) {
+            HeatsScreen(
+                navigateToMapping = { heatId ->
+                    navController.navigate("$MAPPING_SCREEN_STRING/$heatId")
+                }
+            )
         }
     }
 }
