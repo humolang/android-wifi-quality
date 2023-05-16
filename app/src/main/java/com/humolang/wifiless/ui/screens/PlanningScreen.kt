@@ -43,7 +43,7 @@ import kotlin.math.abs
 @Composable
 fun PlanningScreen(
     onCancelClicked: () -> Unit,
-    navigateToMapping: () -> Unit,
+    navigateToMapping: (Int) -> Unit,
     planningViewModel: PlanningViewModel =
         viewModel(factory = PlanningViewModel.Factory)
 ) {
@@ -65,16 +65,21 @@ fun PlanningScreen(
                 .fillMaxSize()
         )
     } else {
-        PlanningField(
-            columns = planningUiState.heat!!.length,
-            rows = planningUiState.heat!!.width,
-            blocks = planningUiState.blocks,
-            onBackClicked = { planningViewModel.resetHeat() },
-            onNextClicked = { navigateToMapping() },
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxSize()
-        )
+        val heat = planningUiState.heat
+        val blocks = planningUiState.blocks
+
+        if (heat != null) {
+            PlanningField(
+                columns = heat.length,
+                rows = heat.width,
+                blocks = blocks,
+                onBackClicked = { planningViewModel.resetHeat() },
+                onNextClicked = { navigateToMapping(heat.id) },
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxSize()
+            )
+        }
     }
 }
 
@@ -103,7 +108,7 @@ private fun RoomParameters(
             },
             singleLine = true,
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number
+                keyboardType = KeyboardType.Text
             ),
             modifier = Modifier.padding(top = 8.dp)
         )
@@ -209,7 +214,7 @@ private fun RoomPlan(
     }
 
     val ratioValue by remember {
-        mutableStateOf(rows.toFloat() / columns)
+        mutableStateOf(columns.toFloat() / rows)
     }
 
     Row(

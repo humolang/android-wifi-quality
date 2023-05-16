@@ -10,7 +10,7 @@ class RssiValue(
     private val refreshIntervalMs: Long = 100
 ) {
 
-    private val _rssi: Int
+    val rssi: Int
         get() {
             val wifiInfo = wifiManager
                 .connectionInfo
@@ -20,7 +20,7 @@ class RssiValue(
 
     private val _latestRssi = flow {
         while (true) {
-            emit(_rssi)
+            emit(rssi)
             delay(refreshIntervalMs)
         }
     }

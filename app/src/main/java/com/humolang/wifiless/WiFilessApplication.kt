@@ -63,6 +63,11 @@ class WiFilessApplication : Application() {
             blockDao = database.blockDao()
         )
 
-        mappingTool = MappingTool()
+        mappingTool = MappingTool(
+            heatDao = database.heatDao(),
+            columnDao = database.columnDao(),
+            blockDao = database.blockDao(),
+            rssiValue = rssiValue
+        )
     }
 }
