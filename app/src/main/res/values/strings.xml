@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Wi-Filess</string>
     <string name="room_parameters">Room Parameters</string>
+    <string name="plan_name">Plan Name</string>
     <string name="length">Length, m</string>
     <string name="width">Width, m</string>
     <string name="cancel">Cancel</string>

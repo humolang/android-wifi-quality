@@ -9,7 +9,7 @@ data class Heat(
 
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "heat_id")
-    val id: Int,
+    val id: Int = -1,
 
     val name: String,
     val length: Int,

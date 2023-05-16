@@ -20,7 +20,7 @@ data class Block(
 
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "block_id")
-    val id: Int,
+    val id: Int = 0,
 
     @ColumnInfo(name = "column_id")
     val columnId: Int,

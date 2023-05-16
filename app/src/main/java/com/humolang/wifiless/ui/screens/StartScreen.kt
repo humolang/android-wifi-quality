@@ -27,7 +27,6 @@ import com.humolang.wifiless.ui.viewmodels.StartViewModel
 @Composable
 fun StartScreen(
     navigateToPlanning: () -> Unit,
-    navigateToMapping: () -> Unit,
     startViewModel: StartViewModel =
         viewModel(factory = StartViewModel.Factory)
 ) {
@@ -58,12 +57,6 @@ fun StartScreen(
                 onClick = navigateToPlanning
             ) {
                 Text(text = "to planning")
-            }
-            Button(
-                onClick = navigateToMapping,
-                modifier = Modifier.padding(start = 8.dp)
-            ) {
-                Text(text = "to mapping")
             }
         }
         Text(
