@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.flow
 
 class LinkSpeedValue(
     private val wifiManager: WifiManager,
-    private val refreshIntervalMs: Long = 100
+    private val _refreshIntervalMs: Long = 100L
 ) {
 
     private val _linkSpeed: Int
@@ -21,9 +21,20 @@ class LinkSpeedValue(
     private val _latestSpeed = flow {
         while (true) {
             emit(_linkSpeed)
-            delay(refreshIntervalMs)
+            delay(_refreshIntervalMs)
         }
     }
     val latestSpeed: Flow<Int>
         get() = _latestSpeed
+
+    private var _maxLinkSpeed = 144
+    val maxLinkSpeed: Int
+        get() = _maxLinkSpeed
+
+    val linkSpeedRefreshIntervalMs: Long
+        get() = _refreshIntervalMs
+
+    fun updateMaxLinkSpeed(newValue: Int) {
+        _maxLinkSpeed = newValue
+    }
 }

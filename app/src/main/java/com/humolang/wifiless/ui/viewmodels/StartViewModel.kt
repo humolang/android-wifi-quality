@@ -19,13 +19,18 @@ class StartViewModel(
 ) : ViewModel() {
 
     private val _startUiState = MutableStateFlow(
-        StartUiState()
+        StartUiState(
+            dequeCapacity = wifiParameters.dequeCapacity,
+            rssiHorizontalCapacity = wifiParameters
+                .rssiHorizontalCapacity,
+            maxRssi = wifiParameters.maxRssi,
+            linkSpeedHorizontalCapacity = wifiParameters
+                .linkSpeedHorizontalCapacity,
+            maxLinkSpeed = wifiParameters.maxLinkSpeed
+        )
     )
     val startUiState: StateFlow<StartUiState>
         get() = _startUiState.asStateFlow()
-
-    val dequeCapacity: Int
-        get() = wifiParameters.dequeCapacity
 
     init {
         viewModelScope.launch {
@@ -48,9 +53,18 @@ class StartViewModel(
 
     private suspend fun collectLatestRssi() {
         wifiParameters.latestRssi.collect { latestRssi ->
-            _startUiState.value = _startUiState.value.copy(
-                latestRssi = latestRssi
-            )
+            if (wifiParameters.maxRssi < latestRssi) {
+                wifiParameters.updateMaxRssi(latestRssi)
+
+                _startUiState.value = _startUiState.value.copy(
+                    latestRssi = latestRssi,
+                    maxRssi = wifiParameters.maxRssi
+                )
+            } else {
+                _startUiState.value = _startUiState.value.copy(
+                    latestRssi = latestRssi
+                )
+            }
         }
     }
 
@@ -64,9 +78,18 @@ class StartViewModel(
 
     private suspend fun collectLatestSpeed() {
         wifiParameters.latestSpeed.collect { latestSpeed ->
-            _startUiState.value = _startUiState.value.copy(
-                latestSpeed = latestSpeed
-            )
+            if (wifiParameters.maxLinkSpeed < latestSpeed) {
+                wifiParameters.updateMaxLinkSpeed(latestSpeed)
+
+                _startUiState.value = _startUiState.value.copy(
+                    latestSpeed = latestSpeed,
+                    maxLinkSpeed = wifiParameters.maxLinkSpeed
+                )
+            } else {
+                _startUiState.value = _startUiState.value.copy(
+                    latestSpeed = latestSpeed
+                )
+            }
         }
     }
 
