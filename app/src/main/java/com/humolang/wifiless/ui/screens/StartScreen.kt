@@ -28,14 +28,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
@@ -136,7 +140,7 @@ private fun StartContent(
             rssiValues = startUiState.rssiValues,
             dequeCapacity = startUiState.dequeCapacity,
             horizontalCapacity = startUiState.rssiHorizontalCapacity,
-            verticalCapacity = startUiState.maxRssi,
+            verticalCapacity = startUiState.minRssi,
             modifier = Modifier.padding(top = 16.dp)
         )
         SpeedGraph(
@@ -189,6 +193,7 @@ private fun RssiGraph(
             verticalCapacity = verticalCapacity,
             labelX = stringResource(id = R.string.label_x_time),
             labelY = stringResource(id = R.string.label_y_rssi),
+            valueAxisAsc = false,
             modifier = Modifier
                 .padding(top = 4.dp)
                 .fillMaxWidth()
@@ -215,6 +220,7 @@ private fun SpeedGraph(
             verticalCapacity = verticalCapacity,
             labelX = stringResource(id = R.string.label_x_time),
             labelY = stringResource(id = R.string.label_y_speed),
+            valueAxisAsc = true,
             modifier = Modifier
                 .padding(top = 4.dp)
                 .fillMaxWidth()
@@ -228,31 +234,55 @@ private fun SpeedGraph(
 private fun GraphDrawerPreview() {
     val dequeCapacity = 60
     val horizontalCapacity = 60
-    val verticalCapacity = 100
+    val rssiVerticalCapacity = -127
+    val speedVerticalCapacity = 144
 
-    val points = ArrayDeque<Int>(horizontalCapacity)
+    val rssiPoints = ArrayDeque<Int>(horizontalCapacity)
+    val speedPoints = ArrayDeque<Int>(horizontalCapacity)
 
     for (index in 0 until horizontalCapacity) {
-        val value = Random.nextInt(
-            from = 0,
-            until = verticalCapacity + 1
+        val rssi = Random.nextInt(
+            from = rssiVerticalCapacity + 9,
+            until = -9
         )
 
-        points.add(value)
+        val speed = Random.nextInt(
+            from = 10,
+            until = speedVerticalCapacity - 9
+        )
+
+        rssiPoints.add(rssi)
+        speedPoints.add(speed)
     }
 
-    GraphDrawer(
-        points = points,
-        dequeCapacity = dequeCapacity,
-        verticalCapacity = verticalCapacity,
-        horizontalCapacity = horizontalCapacity,
-        labelX = "time, s",
-        labelY = "rssi, dBm",
-        modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth()
-            .height(256.dp)
-    )
+    Column {
+        GraphDrawer(
+            points = rssiPoints,
+            dequeCapacity = dequeCapacity,
+            verticalCapacity = rssiVerticalCapacity,
+            horizontalCapacity = horizontalCapacity,
+            labelX = "Time, s",
+            labelY = "RSSI, dBm",
+            valueAxisAsc = false,
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+                .height(256.dp)
+        )
+        GraphDrawer(
+            points = speedPoints,
+            dequeCapacity = dequeCapacity,
+            verticalCapacity = speedVerticalCapacity,
+            horizontalCapacity = horizontalCapacity,
+            labelX = "Time, s",
+            labelY = "Speed, Mbps",
+            valueAxisAsc = true,
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+                .height(256.dp)
+        )
+    }
 }
 
 @OptIn(ExperimentalTextApi::class)
@@ -264,6 +294,7 @@ private fun GraphDrawer(
     verticalCapacity: Int,
     labelX: String,
     labelY: String,
+    valueAxisAsc: Boolean,
     modifier: Modifier = Modifier
 ) {
     val backgroundColor = MaterialTheme.colorScheme
@@ -297,6 +328,7 @@ private fun GraphDrawer(
                         points = points,
                         dequeCapacity = dequeCapacity,
                         verticalCapacity = verticalCapacity,
+                        valueAxisAsc = valueAxisAsc,
                         canvasSize = size
                     )
 
@@ -321,106 +353,238 @@ private fun GraphDrawer(
                 style = Stroke(lineWidthPx)
             )
 
-            val verticals = if (size.width > size.height) {
-                size.width / size.height
-            } else {
-                size.height / size.width
-            }.toInt() * 4
+            drawHorizontalsWithLabels(
+                verticalCapacity = verticalCapacity,
+                lineColor = lineColor,
+                lineWidthPx = lineWidthPx,
+                textMeasurer = textMeasurer,
+                textXOffsetPx = textXOffsetPx,
+                textStyle = textStyle,
+                valueAxisAsc = valueAxisAsc
+            )
 
-            val verticalsInterval = size.width / (verticals + 1)
-            val timeInterval = horizontalCapacity / (verticals + 1)
+            drawVerticalsWithLabels(
+                horizontalCapacity = horizontalCapacity,
+                lineColor = lineColor,
+                lineWidthPx = lineWidthPx,
+                textMeasurer = textMeasurer,
+                textXOffsetPx = textXOffsetPx,
+                textStyle = textStyle,
+                valueAxisAsc = valueAxisAsc
+            )
 
-            repeat(verticals) { number ->
-                val x = verticalsInterval * (number + 1)
-
-                drawLine(
-                    color = lineColor,
-                    start = Offset(x, 0f),
-                    end = Offset(x, size.height),
-                    strokeWidth = lineWidthPx
-                )
-
-                val text = (timeInterval * (number + 1))
-                    .toString()
-
-                drawText(
+            if (valueAxisAsc) {
+                drawSingleLabelsAsc(
                     textMeasurer = textMeasurer,
-                    text = text,
-                    topLeft = Offset(x + textXOffsetPx, 0f),
-                    style = textStyle
+                    textXOffsetPx = textXOffsetPx,
+                    textStyle = textStyle,
+                    labelX = labelX,
+                    labelY = labelY
+                )
+            } else {
+                drawSingleLabelsDesc(
+                    textMeasurer = textMeasurer,
+                    textXOffsetPx = textXOffsetPx,
+                    textStyle = textStyle,
+                    labelX = labelX,
+                    labelY = labelY
                 )
             }
-
-            val horizontals = if (size.width > size.height) {
-                size.width / size.height
-            } else {
-                size.height / size.width
-            }.toInt() * 3
-
-            val horizontalsInterval = size.height / (horizontals + 1)
-            val valueInterval = verticalCapacity / (horizontals + 1)
-
-            repeat(horizontals) { number ->
-                val y = horizontalsInterval * (number + 1)
-
-                drawLine(
-                    color = lineColor,
-                    start = Offset(0f, y),
-                    end = Offset(size.width, y),
-                    strokeWidth = lineWidthPx
-                )
-
-                val text = (valueInterval * (number + 1))
-                    .toString()
-
-                drawText(
-                    textMeasurer = textMeasurer,
-                    text = text,
-                    topLeft = Offset(0f + textXOffsetPx, y),
-                    style = textStyle
-                )
-            }
-
-            drawText(
-                textMeasurer = textMeasurer,
-                text = "0",
-                topLeft = Offset(0f + textXOffsetPx, 0f),
-                style = textStyle
-            )
-
-            val labelXWidth = textMeasurer
-                .measure(labelX).size.width
-
-            drawText(
-                textMeasurer = textMeasurer,
-                text = labelX,
-                topLeft = Offset(
-                    x = size.width - labelXWidth,
-                    y = 0f
-                ),
-                style = textStyle
-            )
-
-            val labelYHeight = textMeasurer
-                .measure(labelY).size.height
-
-            drawText(
-                textMeasurer = textMeasurer,
-                text = labelY,
-                topLeft = Offset(
-                    x = 0f + textXOffsetPx,
-                    y = size.height - labelYHeight
-                ),
-                style = textStyle
-            )
         }
     }
+}
+
+@OptIn(ExperimentalTextApi::class)
+private fun DrawScope.drawHorizontalsWithLabels(
+    verticalCapacity: Int,
+    lineColor: Color,
+    lineWidthPx: Float,
+    textMeasurer: TextMeasurer,
+    textXOffsetPx: Float,
+    textStyle: TextStyle,
+    valueAxisAsc: Boolean
+) {
+    val horizontals = if (size.width > size.height) {
+        size.width / size.height
+    } else {
+        size.height / size.width
+    }.toInt() * 3
+
+    val horizontalsInterval = size.height / (horizontals + 1)
+    val valueInterval = verticalCapacity / (horizontals + 1)
+
+    repeat(horizontals) { number ->
+        val y = horizontalsInterval * (number + 1)
+
+        drawLine(
+            color = lineColor,
+            start = Offset(0f, y),
+            end = Offset(size.width, y),
+            strokeWidth = lineWidthPx
+        )
+
+        val text = if (valueAxisAsc) {
+            valueInterval * (horizontals - number)
+        } else {
+            valueInterval * (number + 1)
+        }.toString()
+
+        drawText(
+            textMeasurer = textMeasurer,
+            text = text,
+            topLeft = Offset(0f + textXOffsetPx, y),
+            style = textStyle
+        )
+    }
+}
+
+@OptIn(ExperimentalTextApi::class)
+private fun DrawScope.drawVerticalsWithLabels(
+    horizontalCapacity: Int,
+    lineColor: Color,
+    lineWidthPx: Float,
+    textMeasurer: TextMeasurer,
+    textXOffsetPx: Float,
+    textStyle: TextStyle,
+    valueAxisAsc: Boolean
+) {
+    val verticals = if (size.width > size.height) {
+        size.width / size.height
+    } else {
+        size.height / size.width
+    }.toInt() * 4
+
+    val verticalsInterval = size.width / (verticals + 1)
+    val timeInterval = horizontalCapacity / (verticals + 1)
+
+    repeat(verticals) { number ->
+        val x = verticalsInterval * (number + 1)
+
+        drawLine(
+            color = lineColor,
+            start = Offset(x, 0f),
+            end = Offset(x, size.height),
+            strokeWidth = lineWidthPx
+        )
+
+        val text = (timeInterval * (number + 1))
+            .toString()
+
+        val y = if (valueAxisAsc) {
+            val labelHeight = textMeasurer
+                .measure(text, textStyle).size.height
+            size.height - labelHeight
+        } else {
+            0f
+        }
+
+        drawText(
+            textMeasurer = textMeasurer,
+            text = text,
+            topLeft = Offset(
+                x = x + textXOffsetPx,
+                y = y
+            ),
+            style = textStyle
+        )
+    }
+}
+
+@OptIn(ExperimentalTextApi::class)
+private fun DrawScope.drawSingleLabelsAsc(
+    textMeasurer: TextMeasurer,
+    textXOffsetPx: Float,
+    textStyle: TextStyle,
+    labelX: String,
+    labelY: String
+) {
+    val labelZero = "0"
+    val labelZeroHeight = textMeasurer
+        .measure(labelZero, textStyle).size.height
+
+    drawText(
+        textMeasurer = textMeasurer,
+        text = labelZero,
+        topLeft = Offset(
+            0f + textXOffsetPx,
+            size.height - labelZeroHeight
+        ),
+        style = textStyle
+    )
+
+    val labelXWidth = textMeasurer
+        .measure(labelX, textStyle).size.width
+    val labelXHeight = textMeasurer
+        .measure(labelX, textStyle).size.height
+
+    drawText(
+        textMeasurer = textMeasurer,
+        text = labelX,
+        topLeft = Offset(
+            x = size.width - labelXWidth - textXOffsetPx,
+            y = size.height - labelXHeight
+        ),
+        style = textStyle
+    )
+
+    drawText(
+        textMeasurer = textMeasurer,
+        text = labelY,
+        topLeft = Offset(
+            x = 0f + textXOffsetPx,
+            y = 0f
+        ),
+        style = textStyle
+    )
+}
+
+@OptIn(ExperimentalTextApi::class)
+private fun DrawScope.drawSingleLabelsDesc(
+    textMeasurer: TextMeasurer,
+    textXOffsetPx: Float,
+    textStyle: TextStyle,
+    labelX: String,
+    labelY: String
+) {
+    drawText(
+        textMeasurer = textMeasurer,
+        text = "0",
+        topLeft = Offset(0f + textXOffsetPx, 0f),
+        style = textStyle
+    )
+
+    val labelXWidth = textMeasurer
+        .measure(labelX, textStyle).size.width
+
+    drawText(
+        textMeasurer = textMeasurer,
+        text = labelX,
+        topLeft = Offset(
+            x = size.width - labelXWidth,
+            y = 0f
+        ),
+        style = textStyle
+    )
+
+    val labelYHeight = textMeasurer
+        .measure(labelY, textStyle).size.height
+
+    drawText(
+        textMeasurer = textMeasurer,
+        text = labelY,
+        topLeft = Offset(
+            x = 0f + textXOffsetPx,
+            y = size.height - labelYHeight
+        ),
+        style = textStyle
+    )
 }
 
 private fun createGraph(
     points: ArrayDeque<Int>,
     dequeCapacity: Int,
     verticalCapacity: Int,
+    valueAxisAsc: Boolean,
     canvasSize: Size
 ): Path {
     val graph = Path()
@@ -428,8 +592,14 @@ private fun createGraph(
     points.forEachIndexed { index, point ->
         val x = canvasSize.width *
                 ((index + 1).toFloat() / dequeCapacity)
-        val y = canvasSize.height *
-                (point.toFloat() / verticalCapacity)
+
+        val y = if (valueAxisAsc) {
+            canvasSize.height *
+                    ((verticalCapacity - point).toFloat() / verticalCapacity)
+        } else {
+            canvasSize.height *
+                    (point.toFloat() / verticalCapacity)
+        }
 
         if (index == 0) {
             graph.moveTo(0f, y)

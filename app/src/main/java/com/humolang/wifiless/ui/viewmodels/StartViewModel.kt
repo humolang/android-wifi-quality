@@ -23,7 +23,7 @@ class StartViewModel(
             dequeCapacity = wifiParameters.dequeCapacity,
             rssiHorizontalCapacity = wifiParameters
                 .rssiHorizontalCapacity,
-            maxRssi = wifiParameters.maxRssi,
+            minRssi = wifiParameters.minRssi,
             linkSpeedHorizontalCapacity = wifiParameters
                 .linkSpeedHorizontalCapacity,
             maxLinkSpeed = wifiParameters.maxLinkSpeed
@@ -53,12 +53,12 @@ class StartViewModel(
 
     private suspend fun collectLatestRssi() {
         wifiParameters.latestRssi.collect { latestRssi ->
-            if (wifiParameters.maxRssi < latestRssi) {
-                wifiParameters.updateMaxRssi(latestRssi)
+            if (wifiParameters.minRssi > latestRssi) {
+                wifiParameters.updateMinRssi(latestRssi)
 
                 _startUiState.value = _startUiState.value.copy(
                     latestRssi = latestRssi,
-                    maxRssi = wifiParameters.maxRssi
+                    minRssi = wifiParameters.minRssi
                 )
             } else {
                 _startUiState.value = _startUiState.value.copy(

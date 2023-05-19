@@ -6,7 +6,6 @@ import com.humolang.wifiless.data.datasources.WifiCallback
 import com.humolang.wifiless.data.datasources.RssiValue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlin.math.abs
 
 class WifiParameters(
     wifiCallback: WifiCallback,
@@ -31,14 +30,14 @@ class WifiParameters(
         get() = (rssiValue.rssiRefreshIntervalMs
                 * _dequeCapacity).toInt() / 1000
 
-    val maxRssi: Int
-        get() = rssiValue.maxRssi
+    val minRssi: Int
+        get() = rssiValue.minRssi
 
     private val rssiDeque = ArrayDeque<Int>(_dequeCapacity)
 
     private val _rssiValues = _latestRssi
         .map { rssi ->
-            rssiDeque.add(abs(rssi))
+            rssiDeque.add(rssi)
 
             if (rssiDeque.size > _dequeCapacity) {
                 rssiDeque.removeFirst()
@@ -79,8 +78,8 @@ class WifiParameters(
     val ipAddress: Flow<String>
         get() = _ipAddress
 
-    fun updateMaxRssi(newValue: Int) {
-        rssiValue.updateMaxRssi(newValue)
+    fun updateMinRssi(newValue: Int) {
+        rssiValue.updateMinRssi(newValue)
     }
 
     fun updateMaxLinkSpeed(newValue: Int) {

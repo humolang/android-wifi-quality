@@ -5,7 +5,7 @@ data class StartUiState(
     val dequeCapacity: Int,
     val latestRssi: Int = 0,
     val rssiHorizontalCapacity: Int,
-    val maxRssi: Int,
+    val minRssi: Int,
     val rssiValues: ArrayDeque<Int> = ArrayDeque(),
     val latestSpeed: Int = 0,
     val linkSpeedHorizontalCapacity: Int,

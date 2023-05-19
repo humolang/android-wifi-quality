@@ -27,14 +27,14 @@ class RssiValue(
     val latestRssi: Flow<Int>
         get() = _latestRssi
 
-    private var _maxRssi = 127
-    val maxRssi: Int
-        get() = _maxRssi
+    private var _minRssi = -127
+    val minRssi: Int
+        get() = _minRssi
 
     val rssiRefreshIntervalMs: Long
         get() = _refreshIntervalMs
 
-    fun updateMaxRssi(newValue: Int) {
-        _maxRssi = newValue
+    fun updateMinRssi(newValue: Int) {
+        _minRssi = newValue
     }
 }
