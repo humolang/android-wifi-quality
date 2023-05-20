@@ -22,7 +22,10 @@ class IpCallback(
     private val _ipAddress = callbackFlow {
         val ipCallback = object : NetworkCallback() {
 
-            override fun onLinkPropertiesChanged(network: Network, linkProperties: LinkProperties) {
+            override fun onLinkPropertiesChanged(
+                network: Network,
+                linkProperties: LinkProperties
+            ) {
                 super.onLinkPropertiesChanged(network, linkProperties)
 
                 val linkAddresses = linkProperties.linkAddresses

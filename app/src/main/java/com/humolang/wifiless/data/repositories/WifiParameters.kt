@@ -1,9 +1,13 @@
 package com.humolang.wifiless.data.repositories
 
+import com.humolang.wifiless.data.datasources.CapabilitiesCallback
 import com.humolang.wifiless.data.datasources.IpCallback
 import com.humolang.wifiless.data.datasources.LinkSpeedValue
+import com.humolang.wifiless.data.datasources.PropertiesCallback
 import com.humolang.wifiless.data.datasources.WifiCallback
 import com.humolang.wifiless.data.datasources.RssiValue
+import com.humolang.wifiless.data.datasources.model.WifiCapabilities
+import com.humolang.wifiless.data.datasources.model.WifiProperties
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -12,6 +16,8 @@ class WifiParameters(
     ipCallback: IpCallback,
     private val rssiValue: RssiValue,
     private val linkSpeedValue: LinkSpeedValue,
+    capabilitiesCallback: CapabilitiesCallback,
+    propertiesCallback: PropertiesCallback,
     private val _dequeCapacity: Int = 60,
 ) {
 
@@ -80,6 +86,16 @@ class WifiParameters(
     private val _ipAddress = ipCallback.ipAddress
     val ipAddress: Flow<String>
         get() = _ipAddress
+
+    private val _wifiCapabilities =
+        capabilitiesCallback.wifiCapabilities
+    val wifiCapabilities: Flow<WifiCapabilities>
+        get() = _wifiCapabilities
+
+    private val _wifiProperties =
+        propertiesCallback.wifiProperties
+    val wifiProperties: Flow<WifiProperties>
+        get() = _wifiProperties
 
     fun updateMinRssi(newValue: Int) {
         rssiValue.updateMinRssi(newValue)

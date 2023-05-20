@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.humolang.wifiless.WiFilessApplication
+import com.humolang.wifiless.data.datasources.model.WifiCapabilities
+import com.humolang.wifiless.data.datasources.model.WifiProperties
 import com.humolang.wifiless.data.repositories.WifiParameters
 import com.humolang.wifiless.ui.states.StartUiState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,6 +35,16 @@ class StartViewModel(
     val startUiState: StateFlow<StartUiState>
         get() = _startUiState.asStateFlow()
 
+    private val _wifiCapabilities =
+        MutableStateFlow(WifiCapabilities())
+    val wifiCapabilities: StateFlow<WifiCapabilities>
+        get() = _wifiCapabilities.asStateFlow()
+
+    private val _wifiProperties =
+        MutableStateFlow(WifiProperties())
+    val wifiProperties: StateFlow<WifiProperties>
+        get() = _wifiProperties.asStateFlow()
+
     init {
         viewModelScope.launch {
             launch { collectIsWifiConnected() }
@@ -41,6 +53,8 @@ class StartViewModel(
             launch { collectLatestSpeed() }
             launch { collectSpeedValues() }
             launch { collectIpAddress() }
+            launch { collectWifiCapabilities() }
+            launch { collectWifiProperties() }
         }
     }
 
@@ -107,6 +121,18 @@ class StartViewModel(
             _startUiState.value = _startUiState.value.copy(
                 ipAddress = ipAddress
             )
+        }
+    }
+
+    private suspend fun collectWifiCapabilities() {
+        wifiParameters.wifiCapabilities.collect { capabilities ->
+            _wifiCapabilities.value = capabilities
+        }
+    }
+
+    private suspend fun collectWifiProperties() {
+        wifiParameters.wifiProperties.collect { properties ->
+            _wifiProperties.value = properties
         }
     }
 
