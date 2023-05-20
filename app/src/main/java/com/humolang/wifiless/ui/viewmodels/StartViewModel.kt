@@ -24,6 +24,7 @@ class StartViewModel(
             rssiHorizontalCapacity = wifiParameters
                 .rssiHorizontalCapacity,
             minRssi = wifiParameters.minRssi,
+            linkSpeedUnits = wifiParameters.linkSpeedUnits,
             linkSpeedHorizontalCapacity = wifiParameters
                 .linkSpeedHorizontalCapacity,
             maxLinkSpeed = wifiParameters.maxLinkSpeed

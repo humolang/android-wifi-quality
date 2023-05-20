@@ -1,5 +1,6 @@
 package com.humolang.wifiless.data.datasources
 
+import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -26,6 +27,9 @@ class LinkSpeedValue(
     }
     val latestSpeed: Flow<Int>
         get() = _latestSpeed
+
+    val linkSpeedUnits: String
+        get() = WifiInfo.LINK_SPEED_UNITS
 
     private var _maxLinkSpeed = 144
     val maxLinkSpeed: Int

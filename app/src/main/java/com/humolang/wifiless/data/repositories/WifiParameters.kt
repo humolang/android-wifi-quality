@@ -52,6 +52,9 @@ class WifiParameters(
     val latestSpeed: Flow<Int>
         get() = _latestSpeed
 
+    val linkSpeedUnits: String
+        get() = linkSpeedValue.linkSpeedUnits
+
     val linkSpeedHorizontalCapacity: Int
         get() = (linkSpeedValue.linkSpeedRefreshIntervalMs
                 * _dequeCapacity).toInt() / 1000

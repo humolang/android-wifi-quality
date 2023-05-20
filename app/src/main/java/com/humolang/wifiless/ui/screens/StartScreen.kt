@@ -1,21 +1,26 @@
 package com.humolang.wifiless.ui.screens
 
-import android.net.wifi.WifiInfo
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.twotone.KeyboardArrowDown
+import androidx.compose.material.icons.twotone.KeyboardArrowUp
+import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -23,6 +28,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
@@ -72,10 +80,10 @@ fun StartScreen(
             StartContent(
                 navigateToPlanning = navigateToPlanning,
                 navigateToHeats = navigateToHeats,
+                startViewModel = startViewModel,
                 modifier = Modifier
                     .padding(innerPadding)
-                    .verticalScroll(rememberScrollState()),
-                startViewModel = startViewModel
+                    .verticalScroll(rememberScrollState())
             )
         }
     )
@@ -127,9 +135,8 @@ private fun StartTopBar(
 private fun StartContent(
     navigateToPlanning: () -> Unit,
     navigateToHeats: () -> Unit,
-    modifier: Modifier = Modifier,
-    startViewModel: StartViewModel =
-        viewModel(factory = StartViewModel.Factory)
+    startViewModel: StartViewModel,
+    modifier: Modifier = Modifier
 ) {
     val startUiState by startViewModel
         .startUiState.collectAsStateWithLifecycle()
@@ -141,7 +148,9 @@ private fun StartContent(
             dequeCapacity = startUiState.dequeCapacity,
             horizontalCapacity = startUiState.rssiHorizontalCapacity,
             verticalCapacity = startUiState.minRssi,
-            modifier = Modifier.padding(top = 16.dp)
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .fillMaxWidth()
         )
         SpeedGraph(
             latestSpeed = startUiState.latestSpeed,
@@ -149,28 +158,23 @@ private fun StartContent(
             dequeCapacity = startUiState.dequeCapacity,
             horizontalCapacity = startUiState.linkSpeedHorizontalCapacity,
             verticalCapacity = startUiState.maxLinkSpeed,
-            modifier = Modifier.padding(top = 16.dp)
-        )
-        Row(
+            linkSpeedUnits = startUiState.linkSpeedUnits,
             modifier = Modifier
                 .padding(top = 16.dp)
-                .align(alignment = Alignment.CenterHorizontally)
-        ) {
-            Button(
-                onClick = navigateToPlanning
-            ) {
-                Text(text = "to planning")
-            }
-            Button(
-                onClick = navigateToHeats,
-                modifier = Modifier.padding(start = 8.dp)
-            ) {
-                Text(text = "to heats")
-            }
-        }
-        Text(
-            text = "IP Address: ${startUiState.ipAddress}",
-            modifier = Modifier.padding(top = 16.dp)
+                .fillMaxWidth()
+        )
+        ToolsButtons(
+            navigateToPlanning = navigateToPlanning,
+            navigateToHeats = navigateToHeats,
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .fillMaxWidth()
+        )
+        ConnectionInfo(
+            ipAddress = startUiState.ipAddress,
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .fillMaxWidth()
         )
     }
 }
@@ -184,21 +188,68 @@ private fun RssiGraph(
     verticalCapacity: Int,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
-        Text(text = "$latestRssi dBm")
-        GraphDrawer(
-            points = rssiValues,
-            dequeCapacity = dequeCapacity,
-            horizontalCapacity = horizontalCapacity,
-            verticalCapacity = verticalCapacity,
-            labelX = stringResource(id = R.string.label_x_time),
-            labelY = stringResource(id = R.string.label_y_rssi),
-            valueAxisAsc = false,
-            modifier = Modifier
-                .padding(top = 4.dp)
-                .fillMaxWidth()
-                .height(256.dp)
-        )
+    Card(
+        modifier = modifier
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            var expanded by remember {
+                mutableStateOf(true)
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(id = R.string.rssi),
+                    modifier = Modifier,
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(
+                        id = R.string.latest_rssi,
+                        latestRssi
+                    ),
+                    modifier = Modifier,
+                    style = MaterialTheme.typography.titleLarge
+                )
+
+                IconButton(
+                    onClick = { expanded = !expanded },
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    if (expanded) {
+                        Icon(
+                            imageVector = Icons.TwoTone.KeyboardArrowUp,
+                            contentDescription = stringResource(
+                                id = R.string.minimize_rssi_graph
+                            )
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.TwoTone.KeyboardArrowDown,
+                            contentDescription = stringResource(
+                                id = R.string.expand_rssi_graph
+                            )
+                        )
+                    }
+                }
+            }
+
+            if (expanded) {
+                GraphDrawer(
+                    points = rssiValues,
+                    dequeCapacity = dequeCapacity,
+                    horizontalCapacity = horizontalCapacity,
+                    verticalCapacity = verticalCapacity,
+                    labelX = stringResource(id = R.string.label_x_time),
+                    labelY = stringResource(id = R.string.label_y_rssi),
+                    valueAxisAsc = false,
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .fillMaxWidth()
+                        .height(256.dp)
+                )
+            }
+        }
     }
 }
 
@@ -209,79 +260,75 @@ private fun SpeedGraph(
     dequeCapacity: Int,
     horizontalCapacity: Int,
     verticalCapacity: Int,
+    linkSpeedUnits: String,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
-        Text(text = "$latestSpeed ${WifiInfo.LINK_SPEED_UNITS}")
-        GraphDrawer(
-            points = speedValues,
-            dequeCapacity = dequeCapacity,
-            horizontalCapacity = horizontalCapacity,
-            verticalCapacity = verticalCapacity,
-            labelX = stringResource(id = R.string.label_x_time),
-            labelY = stringResource(id = R.string.label_y_speed),
-            valueAxisAsc = true,
-            modifier = Modifier
-                .padding(top = 4.dp)
-                .fillMaxWidth()
-                .height(256.dp)
-        )
-    }
-}
+    Card(
+        modifier = modifier
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            var expanded by remember {
+                mutableStateOf(false)
+            }
 
-@Preview(showBackground = true)
-@Composable
-private fun GraphDrawerPreview() {
-    val dequeCapacity = 60
-    val horizontalCapacity = 60
-    val rssiVerticalCapacity = -127
-    val speedVerticalCapacity = 144
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(id = R.string.link_speed),
+                    modifier = Modifier,
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(
+                        id = R.string.latest_speed,
+                        latestSpeed,
+                        linkSpeedUnits
+                    ),
+                    modifier = Modifier,
+                    style = MaterialTheme.typography.titleLarge
+                )
 
-    val rssiPoints = ArrayDeque<Int>(horizontalCapacity)
-    val speedPoints = ArrayDeque<Int>(horizontalCapacity)
+                IconButton(
+                    onClick = { expanded = !expanded },
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    if (expanded) {
+                        Icon(
+                            imageVector = Icons.TwoTone.KeyboardArrowUp,
+                            contentDescription = stringResource(
+                                id = R.string.minimize_speed_graph
+                            )
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.TwoTone.KeyboardArrowDown,
+                            contentDescription = stringResource(
+                                id = R.string.expand_speed_graph
+                            )
+                        )
+                    }
+                }
+            }
 
-    for (index in 0 until horizontalCapacity) {
-        val rssi = Random.nextInt(
-            from = rssiVerticalCapacity + 9,
-            until = -9
-        )
-
-        val speed = Random.nextInt(
-            from = 10,
-            until = speedVerticalCapacity - 9
-        )
-
-        rssiPoints.add(rssi)
-        speedPoints.add(speed)
-    }
-
-    Column {
-        GraphDrawer(
-            points = rssiPoints,
-            dequeCapacity = dequeCapacity,
-            verticalCapacity = rssiVerticalCapacity,
-            horizontalCapacity = horizontalCapacity,
-            labelX = "Time, s",
-            labelY = "RSSI, dBm",
-            valueAxisAsc = false,
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-                .height(256.dp)
-        )
-        GraphDrawer(
-            points = speedPoints,
-            dequeCapacity = dequeCapacity,
-            verticalCapacity = speedVerticalCapacity,
-            horizontalCapacity = horizontalCapacity,
-            labelX = "Time, s",
-            labelY = "Speed, Mbps",
-            valueAxisAsc = true,
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-                .height(256.dp)
-        )
+            if (expanded) {
+                GraphDrawer(
+                    points = speedValues,
+                    dequeCapacity = dequeCapacity,
+                    horizontalCapacity = horizontalCapacity,
+                    verticalCapacity = verticalCapacity,
+                    labelX = stringResource(id = R.string.label_x_time),
+                    labelY = stringResource(
+                        id = R.string.label_y_speed,
+                        linkSpeedUnits
+                    ),
+                    valueAxisAsc = true,
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .fillMaxWidth()
+                        .height(256.dp)
+                )
+            }
+        }
     }
 }
 
@@ -609,4 +656,196 @@ private fun createGraph(
     }
 
     return graph
+}
+
+@Composable
+private fun ToolsButtons(
+    navigateToPlanning: () -> Unit,
+    navigateToHeats: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(modifier = modifier) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = stringResource(id = R.string.tools_buttons),
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            Row(modifier = Modifier.padding(top = 8.dp)) {
+                val buttonShape = MaterialTheme.shapes.small
+
+                ElevatedButton(
+                    onClick = navigateToPlanning,
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .weight(1f),
+                    shape = buttonShape
+                ) {
+                    Row(
+                        modifier = Modifier,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(
+                                id = R.drawable.twotone_architecture_24
+                            ),
+                            contentDescription = null
+                        )
+                        Text(
+                            text = stringResource(id = R.string.room_plan),
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
+                }
+
+                ElevatedButton(
+                    onClick = navigateToHeats,
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .weight(1f),
+                    shape = buttonShape
+                ) {
+                    Row(
+                        modifier = Modifier,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(
+                                id = R.drawable.twotone_map_24
+                            ),
+                            contentDescription = null
+                        )
+                        Text(
+                            text = stringResource(id = R.string.heatmaps),
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ConnectionInfo(
+    ipAddress: String,
+    modifier: Modifier = Modifier
+) {
+    Card(modifier = modifier) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = stringResource(id = R.string.info),
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            Row(modifier = Modifier.padding(top = 8.dp)) {
+                val textStyle = MaterialTheme.typography.bodyLarge
+
+                Column(
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .weight(1f)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.ip_address),
+                        modifier = Modifier,
+                        style = textStyle
+                    )
+                    Text(
+                        text = stringResource(id = R.string.ip_address),
+                        modifier = Modifier.padding(top = 8.dp),
+                        style = textStyle
+                    )
+                }
+
+                Column(
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .weight(1f)
+                ) {
+                    Text(
+                        text = ipAddress,
+                        modifier = Modifier,
+                        style = textStyle
+                    )
+                    Text(
+                        text = ipAddress,
+                        modifier = Modifier.padding(top = 8.dp),
+                        style = textStyle
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun GraphDrawerPreview() {
+    val dequeCapacity = 60
+    val horizontalCapacity = 60
+    val rssiVerticalCapacity = -127
+    val speedVerticalCapacity = 144
+
+    val rssiPoints = ArrayDeque<Int>(horizontalCapacity)
+    val speedPoints = ArrayDeque<Int>(horizontalCapacity)
+
+    for (index in 0 until horizontalCapacity) {
+        val rssi = Random.nextInt(
+            from = rssiVerticalCapacity + 9,
+            until = -9
+        )
+
+        val speed = Random.nextInt(
+            from = 10,
+            until = speedVerticalCapacity - 9
+        )
+
+        rssiPoints.add(rssi)
+        speedPoints.add(speed)
+    }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        RssiGraph(
+            latestRssi = -55,
+            rssiValues = rssiPoints,
+            dequeCapacity = dequeCapacity,
+            horizontalCapacity = horizontalCapacity,
+            verticalCapacity = rssiVerticalCapacity,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(256.dp)
+        )
+        SpeedGraph(
+            latestSpeed = 11,
+            speedValues = speedPoints,
+            dequeCapacity = dequeCapacity,
+            horizontalCapacity = horizontalCapacity,
+            verticalCapacity = rssiVerticalCapacity,
+            linkSpeedUnits = "Mbps",
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .fillMaxWidth()
+                .height(256.dp)
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ToolsButtonsPreview() {
+    ToolsButtons(
+        navigateToPlanning = { /*TODO*/ },
+        navigateToHeats = { /*TODO*/ },
+        modifier = Modifier.padding(16.dp)
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun InfoPreview() {
+    ConnectionInfo(
+        ipAddress = "192.168.1.1",
+        modifier = Modifier.padding(16.dp)
+    )
 }

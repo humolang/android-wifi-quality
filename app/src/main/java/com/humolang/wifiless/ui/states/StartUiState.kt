@@ -8,6 +8,7 @@ data class StartUiState(
     val minRssi: Int,
     val rssiValues: ArrayDeque<Int> = ArrayDeque(),
     val latestSpeed: Int = 0,
+    val linkSpeedUnits: String,
     val linkSpeedHorizontalCapacity: Int,
     val maxLinkSpeed: Int,
     val speedValues: ArrayDeque<Int> = ArrayDeque(),

@@ -12,5 +12,18 @@
     <string name="menu">Menu</string>
     <string name="label_x_time">Time, s</string>
     <string name="label_y_rssi">RSSI, dBm</string>
-    <string name="label_y_speed">Speed, Mbps</string>
+    <string name="label_y_speed">Speed, %1$s</string>
+    <string name="tools_buttons">Tools</string>
+    <string name="room_plan">Room Plan</string>
+    <string name="heatmaps">Heatmaps</string>
+    <string name="info">Connection Info</string>
+    <string name="ip_address">IP Address</string>
+    <string name="rssi">RSSI</string>
+    <string name="latest_rssi">%1$d dBm</string>
+    <string name="link_speed">Link Speed</string>
+    <string name="latest_speed">%1$d %2$s</string>
+    <string name="expand_rssi_graph">Expand RSSI graph</string>
+    <string name="minimize_rssi_graph">Minimize RSSI graph</string>
+    <string name="expand_speed_graph">Expand link speed graph</string>
+    <string name="minimize_speed_graph">Minimize link speed graph</string>
 </resources>
