@@ -1,10 +1,8 @@
 package com.humolang.wifiless.data.repositories
 
 import com.humolang.wifiless.data.datasources.CapabilitiesCallback
-import com.humolang.wifiless.data.datasources.IpCallback
 import com.humolang.wifiless.data.datasources.LinkSpeedValue
 import com.humolang.wifiless.data.datasources.PropertiesCallback
-import com.humolang.wifiless.data.datasources.WifiCallback
 import com.humolang.wifiless.data.datasources.RssiValue
 import com.humolang.wifiless.data.datasources.model.WifiCapabilities
 import com.humolang.wifiless.data.datasources.model.WifiProperties
@@ -12,22 +10,19 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class WifiParameters(
-    wifiCallback: WifiCallback,
-    ipCallback: IpCallback,
     private val rssiValue: RssiValue,
     private val linkSpeedValue: LinkSpeedValue,
     capabilitiesCallback: CapabilitiesCallback,
     propertiesCallback: PropertiesCallback,
-    private val _dequeCapacity: Int = 60,
+    private val _dequeCapacity: Int = 600,
 ) {
-
-    private val _isWifiConnected = wifiCallback.isWifiConnected
-    val isWifiConnected: Flow<Boolean>
-        get() = _isWifiConnected
 
     private val _latestRssi = rssiValue.latestRssi
     val latestRssi: Flow<Int>
         get() = _latestRssi
+
+    val minRssi: Int
+        get() = rssiValue.minRssi
 
     val dequeCapacity: Int
         get() = _dequeCapacity
@@ -35,9 +30,6 @@ class WifiParameters(
     val rssiHorizontalCapacity: Int
         get() = (rssiValue.rssiRefreshIntervalMs
                 * _dequeCapacity).toInt() / 1000
-
-    val minRssi: Int
-        get() = rssiValue.minRssi
 
     private val rssiDeque = ArrayDeque<Int>(_dequeCapacity)
 
@@ -54,9 +46,12 @@ class WifiParameters(
     val rssiValues: Flow<ArrayDeque<Int>>
         get() = _rssiValues
 
-    private val _latestSpeed = linkSpeedValue.latestSpeed
-    val latestSpeed: Flow<Int>
-        get() = _latestSpeed
+    private val _latestLinkSpeed = linkSpeedValue.latestLinkSpeed
+    val latestLinkSpeed: Flow<Int>
+        get() = _latestLinkSpeed
+
+    val maxLinkSpeed: Int
+        get() = linkSpeedValue.maxLinkSpeed
 
     val linkSpeedUnits: String
         get() = linkSpeedValue.linkSpeedUnits
@@ -65,27 +60,20 @@ class WifiParameters(
         get() = (linkSpeedValue.linkSpeedRefreshIntervalMs
                 * _dequeCapacity).toInt() / 1000
 
-    val maxLinkSpeed: Int
-        get() = linkSpeedValue.maxLinkSpeed
+    private val linkSpeedDeque = ArrayDeque<Int>(_dequeCapacity)
 
-    private val speedDeque = ArrayDeque<Int>(_dequeCapacity)
+    private val _linkSpeedValues = _latestLinkSpeed
+        .map { linkSpeed ->
+            linkSpeedDeque.add(linkSpeed)
 
-    private val _speedValues = _latestSpeed
-        .map { speed ->
-            speedDeque.add(speed)
-
-            if (speedDeque.size >_dequeCapacity) {
-                speedDeque.removeFirst()
+            if (linkSpeedDeque.size > _dequeCapacity) {
+                linkSpeedDeque.removeFirst()
             }
 
-            ArrayDeque(speedDeque)
+            ArrayDeque(linkSpeedDeque)
         }
-    val speedValues: Flow<ArrayDeque<Int>>
-        get() = _speedValues
-
-    private val _ipAddress = ipCallback.ipAddress
-    val ipAddress: Flow<String>
-        get() = _ipAddress
+    val linkSpeedValues: Flow<ArrayDeque<Int>>
+        get() = _linkSpeedValues
 
     private val _wifiCapabilities =
         capabilitiesCallback.wifiCapabilities

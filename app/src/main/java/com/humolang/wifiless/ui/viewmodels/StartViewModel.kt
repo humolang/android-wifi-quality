@@ -10,7 +10,8 @@ import com.humolang.wifiless.WiFilessApplication
 import com.humolang.wifiless.data.datasources.model.WifiCapabilities
 import com.humolang.wifiless.data.datasources.model.WifiProperties
 import com.humolang.wifiless.data.repositories.WifiParameters
-import com.humolang.wifiless.ui.states.StartUiState
+import com.humolang.wifiless.ui.states.LinkSpeedGraphState
+import com.humolang.wifiless.ui.states.RssiGraphState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,20 +21,51 @@ class StartViewModel(
     private val wifiParameters: WifiParameters
 ) : ViewModel() {
 
-    private val _startUiState = MutableStateFlow(
-        StartUiState(
-            dequeCapacity = wifiParameters.dequeCapacity,
-            rssiHorizontalCapacity = wifiParameters
-                .rssiHorizontalCapacity,
+    val dequeCapacity: Int
+        get() = wifiParameters.dequeCapacity
+
+    private val _rssiGraphState = MutableStateFlow(
+        RssiGraphState(
             minRssi = wifiParameters.minRssi,
-            linkSpeedUnits = wifiParameters.linkSpeedUnits,
-            linkSpeedHorizontalCapacity = wifiParameters
-                .linkSpeedHorizontalCapacity,
-            maxLinkSpeed = wifiParameters.maxLinkSpeed
+            rssiHorizontalCapacity = wifiParameters
+                .rssiHorizontalCapacity
         )
     )
-    val startUiState: StateFlow<StartUiState>
-        get() = _startUiState.asStateFlow()
+    val rssiGraphState: StateFlow<RssiGraphState>
+        get() = _rssiGraphState.asStateFlow()
+
+    private val _latestRssi =
+        MutableStateFlow(wifiParameters.minRssi)
+    val latestRssi: StateFlow<Int>
+        get() = _latestRssi.asStateFlow()
+
+    private val _rssiValues =
+        MutableStateFlow(ArrayDeque<Int>())
+    val rssiValues: StateFlow<ArrayDeque<Int>>
+        get() = _rssiValues.asStateFlow()
+
+    private val _linkSpeedGraphState = MutableStateFlow(
+        LinkSpeedGraphState(
+            maxLinkSpeed = wifiParameters.maxLinkSpeed,
+            linkSpeedHorizontalCapacity = wifiParameters
+                .linkSpeedHorizontalCapacity
+        )
+    )
+    val linkSpeedGraphState: StateFlow<LinkSpeedGraphState>
+        get() = _linkSpeedGraphState.asStateFlow()
+
+    private val _latestLinkSpeed =
+        MutableStateFlow(0)
+    val latestLinkSpeed: StateFlow<Int>
+        get() = _latestLinkSpeed.asStateFlow()
+
+    val linkSpeedUnits: String
+        get() = wifiParameters.linkSpeedUnits
+
+    private val _linkSpeedValues =
+        MutableStateFlow(ArrayDeque<Int>())
+    val linkSpeedValues: StateFlow<ArrayDeque<Int>>
+        get() = _linkSpeedValues.asStateFlow()
 
     private val _wifiCapabilities =
         MutableStateFlow(WifiCapabilities())
@@ -47,80 +79,52 @@ class StartViewModel(
 
     init {
         viewModelScope.launch {
-            launch { collectIsWifiConnected() }
             launch { collectLatestRssi() }
             launch { collectRssiValues() }
-            launch { collectLatestSpeed() }
-            launch { collectSpeedValues() }
-            launch { collectIpAddress() }
+            launch { collectLatestLinkSpeed() }
+            launch { collectLinkSpeedValues() }
             launch { collectWifiCapabilities() }
             launch { collectWifiProperties() }
         }
     }
 
-    private suspend fun collectIsWifiConnected() {
-        wifiParameters.isWifiConnected.collect { isWifiConnected ->
-            _startUiState.value = _startUiState.value.copy(
-                isWifiConnected = isWifiConnected
-            )
-        }
-    }
-
     private suspend fun collectLatestRssi() {
-        wifiParameters.latestRssi.collect { latestRssi ->
-            if (wifiParameters.minRssi > latestRssi) {
-                wifiParameters.updateMinRssi(latestRssi)
+        wifiParameters.latestRssi.collect { rssi ->
+            if (wifiParameters.minRssi > rssi) {
+                wifiParameters.updateMinRssi(rssi)
 
-                _startUiState.value = _startUiState.value.copy(
-                    latestRssi = latestRssi,
+                _rssiGraphState.value = _rssiGraphState.value.copy(
                     minRssi = wifiParameters.minRssi
                 )
-            } else {
-                _startUiState.value = _startUiState.value.copy(
-                    latestRssi = latestRssi
-                )
             }
+
+            _latestRssi.value = rssi
         }
     }
 
     private suspend fun collectRssiValues() {
-        wifiParameters.rssiValues.collect { rssiValues ->
-            _startUiState.value = _startUiState.value.copy(
-                rssiValues = rssiValues
-            )
+        wifiParameters.rssiValues.collect { rssiDeque ->
+            _rssiValues.value = rssiDeque
         }
     }
 
-    private suspend fun collectLatestSpeed() {
-        wifiParameters.latestSpeed.collect { latestSpeed ->
-            if (wifiParameters.maxLinkSpeed < latestSpeed) {
-                wifiParameters.updateMaxLinkSpeed(latestSpeed)
+    private suspend fun collectLatestLinkSpeed() {
+        wifiParameters.latestLinkSpeed.collect { linkSpeed ->
+            if (wifiParameters.maxLinkSpeed < linkSpeed) {
+                wifiParameters.updateMaxLinkSpeed(linkSpeed)
 
-                _startUiState.value = _startUiState.value.copy(
-                    latestSpeed = latestSpeed,
+                _linkSpeedGraphState.value = _linkSpeedGraphState.value.copy(
                     maxLinkSpeed = wifiParameters.maxLinkSpeed
                 )
-            } else {
-                _startUiState.value = _startUiState.value.copy(
-                    latestSpeed = latestSpeed
-                )
             }
+
+            _latestLinkSpeed.value = linkSpeed
         }
     }
 
-    private suspend fun collectSpeedValues() {
-        wifiParameters.speedValues.collect { speedValues ->
-            _startUiState.value = _startUiState.value.copy(
-                speedValues = speedValues
-            )
-        }
-    }
-
-    private suspend fun collectIpAddress() {
-        wifiParameters.ipAddress.collect { ipAddress ->
-            _startUiState.value = _startUiState.value.copy(
-                ipAddress = ipAddress
-            )
+    private suspend fun collectLinkSpeedValues() {
+        wifiParameters.linkSpeedValues.collect { linkSpeedDeque ->
+            _linkSpeedValues.value = linkSpeedDeque
         }
     }
 

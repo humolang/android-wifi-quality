@@ -26,25 +26,6 @@ class CapabilitiesCallback(
     private val _wifiCapabilities = callbackFlow {
         val capabilitiesCallback = object : NetworkCallback() {
 
-//            override fun onAvailable(network: Network) {
-//                super.onAvailable(network)
-//            }
-//
-//            override fun onLosing(
-//                network: Network,
-//                maxMsToLive: Int
-//            ) {
-//                super.onLosing(network, maxMsToLive)
-//            }
-//
-//            override fun onLost(network: Network) {
-//                super.onLost(network)
-//            }
-//
-//            override fun onUnavailable() {
-//                super.onUnavailable()
-//            }
-
             override fun onCapabilitiesChanged(
                 network: Network,
                 networkCapabilities: NetworkCapabilities
@@ -60,8 +41,6 @@ class CapabilitiesCallback(
                         Build.VERSION_CODES.R
                 val isAndroidS = Build.VERSION.SDK_INT >=
                         Build.VERSION_CODES.S
-                val isAndroidTiramisu = Build.VERSION.SDK_INT >=
-                        Build.VERSION_CODES.TIRAMISU
 
                 val wifiInfo = if (isAndroidQ) {
                     networkCapabilities
@@ -71,58 +50,26 @@ class CapabilitiesCallback(
                 }
 
                 val capabilities = WifiCapabilities(
-                    downstreamBandwidthKbps = networkCapabilities
-                        .linkDownstreamBandwidthKbps,
-                    upstreamBandwidthKbps = networkCapabilities
-                        .linkUpstreamBandwidthKbps,
-                    signalStrength = if (isAndroidQ)
-                        networkCapabilities.signalStrength
-                    else -127,
+                    wifiStandard = if (isAndroidR)
+                        wifiInfo.wifiStandard
+                    else -1,
 
-                    bssid = wifiInfo.bssid,
                     securityType = if (isAndroidS)
                         wifiInfo.currentSecurityType
                     else -1,
 
                     frequency = wifiInfo.frequency,
+
+                    downstreamBandwidthKbps = networkCapabilities
+                        .linkDownstreamBandwidthKbps,
+                    upstreamBandwidthKbps = networkCapabilities
+                        .linkUpstreamBandwidthKbps,
+
                     hasHiddenSsid = wifiInfo.hiddenSSID,
-                    macAddress = wifiInfo.macAddress,
-                    maxSupportedRxLinkSpeedMbps = if (isAndroidR)
-                        wifiInfo.maxSupportedRxLinkSpeedMbps
-                    else -1,
-
-                    maxSupportedTxLinkSpeedMbps = if (isAndroidR)
-                        wifiInfo.maxSupportedTxLinkSpeedMbps
-                    else -1,
-
-                    fullyQualifiedDomainName = if (isAndroidQ)
-                        wifiInfo.passpointFqdn ?: "-1"
-                    else "-1",
-
-                    providerFriendlyName = if (isAndroidQ)
-                        wifiInfo.passpointProviderFriendlyName ?: "-1"
-                    else "-1",
-
-                    rssi = wifiInfo.rssi,
-                    rxLinkSpeedMbps = if (isAndroidQ)
-                        wifiInfo.rxLinkSpeedMbps
-                    else -1,
-
                     ssid = wifiInfo.ssid,
-                    txLinkSpeedMbps = if (isAndroidQ)
-                        wifiInfo.txLinkSpeedMbps
-                    else -1,
+                    bssid = wifiInfo.bssid,
 
-                    wifiStandard = if (isAndroidR)
-                        wifiInfo.wifiStandard
-                    else -1,
-
-                    isRestricted = if (isAndroidTiramisu)
-                        wifiInfo.isRestricted
-                    else false,
-
-                    frequencyUnits = WifiInfo.FREQUENCY_UNITS,
-                    linkSpeedUnits = WifiInfo.LINK_SPEED_UNITS
+                    frequencyUnits = WifiInfo.FREQUENCY_UNITS
                 )
 
                 trySendBlocking(capabilities)
@@ -130,26 +77,6 @@ class CapabilitiesCallback(
                         close(throwable)
                     }
             }
-
-//            override fun onLinkPropertiesChanged(
-//                network: Network,
-//                linkProperties: LinkProperties
-//            ) {
-//                super.onLinkPropertiesChanged(
-//                    network,
-//                    linkProperties
-//                )
-//            }
-//
-//            override fun onBlockedStatusChanged(
-//                network: Network,
-//                blocked: Boolean
-//            ) {
-//                super.onBlockedStatusChanged(
-//                    network,
-//                    blocked
-//                )
-//            }
         }
 
         connectivityManager

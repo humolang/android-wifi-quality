@@ -6,9 +6,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -51,15 +51,16 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.humolang.wifiless.R
 import com.humolang.wifiless.data.datasources.model.WifiCapabilities
 import com.humolang.wifiless.data.datasources.model.WifiProperties
+import com.humolang.wifiless.ui.states.LinkSpeedGraphState
+import com.humolang.wifiless.ui.states.RssiGraphState
 import com.humolang.wifiless.ui.viewmodels.StartViewModel
-import kotlin.random.Random
+import kotlinx.coroutines.flow.StateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -140,32 +141,22 @@ private fun StartContent(
     startViewModel: StartViewModel,
     modifier: Modifier = Modifier
 ) {
-    val startUiState by startViewModel
-        .startUiState.collectAsStateWithLifecycle()
-
-    val wifiCapabilities by startViewModel
-        .wifiCapabilities.collectAsStateWithLifecycle()
-    val wifiProperties by startViewModel
-        .wifiProperties.collectAsStateWithLifecycle()
-
     Column(modifier = modifier.padding(16.dp)) {
         RssiGraph(
-            latestRssi = startUiState.latestRssi,
-            rssiValues = startUiState.rssiValues,
-            dequeCapacity = startUiState.dequeCapacity,
-            horizontalCapacity = startUiState.rssiHorizontalCapacity,
-            verticalCapacity = startUiState.minRssi,
+            dequeCapacity = startViewModel.dequeCapacity,
+            rssiGraphState = startViewModel.rssiGraphState,
+            latestRssi = startViewModel.latestRssi,
+            rssiValues = startViewModel.rssiValues,
             modifier = Modifier
                 .padding(top = 16.dp)
                 .fillMaxWidth()
         )
-        SpeedGraph(
-            latestSpeed = startUiState.latestSpeed,
-            speedValues = startUiState.speedValues,
-            dequeCapacity = startUiState.dequeCapacity,
-            horizontalCapacity = startUiState.linkSpeedHorizontalCapacity,
-            verticalCapacity = startUiState.maxLinkSpeed,
-            linkSpeedUnits = startUiState.linkSpeedUnits,
+        LinkSpeedGraph(
+            dequeCapacity = startViewModel.dequeCapacity,
+            linkSpeedGraphState = startViewModel.linkSpeedGraphState,
+            latestLinkSpeed = startViewModel.latestLinkSpeed,
+            linkSpeedUnits = startViewModel.linkSpeedUnits,
+            linkSpeedValues = startViewModel.linkSpeedValues,
             modifier = Modifier
                 .padding(top = 16.dp)
                 .fillMaxWidth()
@@ -178,13 +169,13 @@ private fun StartContent(
                 .fillMaxWidth()
         )
         WifiCapabilities(
-            capabilities = wifiCapabilities,
+            wifiCapabilities = startViewModel.wifiCapabilities,
             modifier = Modifier
                 .padding(top = 16.dp)
                 .fillMaxWidth()
         )
         WifiProperties(
-            properties = wifiProperties,
+            wifiProperties = startViewModel.wifiProperties,
             modifier = Modifier
                 .padding(top = 16.dp)
                 .fillMaxWidth()
@@ -194,11 +185,10 @@ private fun StartContent(
 
 @Composable
 private fun RssiGraph(
-    latestRssi: Int,
-    rssiValues: ArrayDeque<Int>,
     dequeCapacity: Int,
-    horizontalCapacity: Int,
-    verticalCapacity: Int,
+    rssiGraphState: StateFlow<RssiGraphState>,
+    latestRssi: StateFlow<Int>,
+    rssiValues: StateFlow<ArrayDeque<Int>>,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -216,10 +206,14 @@ private fun RssiGraph(
                     style = MaterialTheme.typography.titleLarge
                 )
                 Spacer(modifier = Modifier.weight(1f))
+
+                val rssi by latestRssi
+                    .collectAsStateWithLifecycle()
+
                 Text(
                     text = stringResource(
                         id = R.string.rssi_dbm,
-                        latestRssi
+                        rssi
                     ),
                     modifier = Modifier,
                     style = MaterialTheme.typography.titleLarge
@@ -248,18 +242,20 @@ private fun RssiGraph(
             }
 
             if (expanded) {
+                val graphState by rssiGraphState
+                    .collectAsStateWithLifecycle()
+
                 GraphDrawer(
-                    points = rssiValues,
+                    pointsFlow = rssiValues,
                     dequeCapacity = dequeCapacity,
-                    horizontalCapacity = horizontalCapacity,
-                    verticalCapacity = verticalCapacity,
+                    horizontalCapacity = graphState.rssiHorizontalCapacity,
+                    verticalCapacity = graphState.minRssi,
                     labelX = stringResource(id = R.string.label_x_time),
                     labelY = stringResource(id = R.string.label_y_rssi),
                     valueAxisAsc = false,
                     modifier = Modifier
                         .padding(top = 8.dp)
-                        .fillMaxWidth()
-                        .height(256.dp)
+                        .aspectRatio(3 / 2f)
                 )
             }
         }
@@ -267,12 +263,11 @@ private fun RssiGraph(
 }
 
 @Composable
-private fun SpeedGraph(
-    latestSpeed: Int,
-    speedValues: ArrayDeque<Int>,
+private fun LinkSpeedGraph(
     dequeCapacity: Int,
-    horizontalCapacity: Int,
-    verticalCapacity: Int,
+    linkSpeedGraphState: StateFlow<LinkSpeedGraphState>,
+    latestLinkSpeed: StateFlow<Int>,
+    linkSpeedValues: StateFlow<ArrayDeque<Int>>,
     linkSpeedUnits: String,
     modifier: Modifier = Modifier
 ) {
@@ -291,10 +286,14 @@ private fun SpeedGraph(
                     style = MaterialTheme.typography.titleLarge
                 )
                 Spacer(modifier = Modifier.weight(1f))
+
+                val linkSpeed by latestLinkSpeed
+                    .collectAsStateWithLifecycle()
+
                 Text(
                     text = stringResource(
                         id = R.string.link_speed_value,
-                        latestSpeed,
+                        linkSpeed,
                         linkSpeedUnits
                     ),
                     modifier = Modifier,
@@ -324,11 +323,14 @@ private fun SpeedGraph(
             }
 
             if (expanded) {
+                val graphState by linkSpeedGraphState
+                    .collectAsStateWithLifecycle()
+
                 GraphDrawer(
-                    points = speedValues,
+                    pointsFlow = linkSpeedValues,
                     dequeCapacity = dequeCapacity,
-                    horizontalCapacity = horizontalCapacity,
-                    verticalCapacity = verticalCapacity,
+                    horizontalCapacity = graphState.linkSpeedHorizontalCapacity,
+                    verticalCapacity = graphState.maxLinkSpeed,
                     labelX = stringResource(id = R.string.label_x_time),
                     labelY = stringResource(
                         id = R.string.label_y_speed,
@@ -337,8 +339,7 @@ private fun SpeedGraph(
                     valueAxisAsc = true,
                     modifier = Modifier
                         .padding(top = 8.dp)
-                        .fillMaxWidth()
-                        .height(256.dp)
+                        .aspectRatio(3 / 2f)
                 )
             }
         }
@@ -348,7 +349,7 @@ private fun SpeedGraph(
 @OptIn(ExperimentalTextApi::class)
 @Composable
 private fun GraphDrawer(
-    points: ArrayDeque<Int>,
+    pointsFlow: StateFlow<ArrayDeque<Int>>,
     dequeCapacity: Int,
     horizontalCapacity: Int,
     verticalCapacity: Int,
@@ -377,6 +378,9 @@ private fun GraphDrawer(
         val textMeasurer = rememberTextMeasurer()
         val textStyle = MaterialTheme.typography
             .labelSmall
+
+        val points by pointsFlow
+            .collectAsStateWithLifecycle()
 
         Canvas(
             modifier = Modifier
@@ -741,7 +745,7 @@ private fun ToolsButtons(
 
 @Composable
 private fun WifiCapabilities(
-    capabilities: WifiCapabilities,
+    wifiCapabilities: StateFlow<WifiCapabilities>,
     modifier: Modifier = Modifier
 ) {
     Card(modifier = modifier) {
@@ -784,9 +788,16 @@ private fun WifiCapabilities(
                 ) {
                     val textStyle = MaterialTheme.typography.bodyLarge
 
-                    Row {
+                    val capabilities by wifiCapabilities
+                        .collectAsStateWithLifecycle()
+
+                    Row(
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
                         Text(
-                            text = stringResource(id = R.string.downstream_bandwidth),
+                            text = stringResource(
+                                id = R.string.wifi_standard
+                            ),
                             modifier = Modifier
                                 .padding(end = 8.dp)
                                 .weight(1f),
@@ -794,72 +805,8 @@ private fun WifiCapabilities(
                         )
                         Text(
                             text = stringResource(
-                                id = R.string.bandwidth_kbps,
-                                capabilities.downstreamBandwidthKbps
+                                capabilities.wifiStandardStringId
                             ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.upstream_bandwidth),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                id = R.string.bandwidth_kbps,
-                                capabilities.upstreamBandwidthKbps
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.signal_strength),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                id = R.string.rssi_dbm,
-                                capabilities.signalStrength
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.bssid),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = capabilities.bssid,
                             modifier = Modifier
                                 .padding(start = 8.dp)
                                 .weight(1f),
@@ -917,6 +864,50 @@ private fun WifiCapabilities(
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
                         Text(
+                            text = stringResource(id = R.string.downstream_bandwidth),
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .weight(1f),
+                            style = textStyle
+                        )
+                        Text(
+                            text = stringResource(
+                                id = R.string.bandwidth_kbps,
+                                capabilities.downstreamBandwidthKbps
+                            ),
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .weight(1f),
+                            style = textStyle
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.upstream_bandwidth),
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .weight(1f),
+                            style = textStyle
+                        )
+                        Text(
+                            text = stringResource(
+                                id = R.string.bandwidth_kbps,
+                                capabilities.upstreamBandwidthKbps
+                            ),
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .weight(1f),
+                            style = textStyle
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Text(
                             text = stringResource(
                                 id = R.string.has_hidden_ssid
                             ),
@@ -928,166 +919,8 @@ private fun WifiCapabilities(
                         Text(
                             text = stringResource(
                                 id = if (capabilities.hasHiddenSsid)
-                                    R.string.true_string
-                                else R.string.false_string
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.mac_address),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = capabilities.macAddress,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.max_supported_rx_speed
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                id = R.string.link_speed_value,
-                                capabilities.maxSupportedRxLinkSpeedMbps,
-                                capabilities.linkSpeedUnits
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.max_supported_tx_speed
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                id = R.string.link_speed_value,
-                                capabilities.maxSupportedTxLinkSpeedMbps,
-                                capabilities.linkSpeedUnits
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.fully_qualified_domain_name
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = capabilities.fullyQualifiedDomainName,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.provider_friendly_name
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = capabilities.providerFriendlyName,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.rssi),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                id = R.string.rssi_dbm,
-                                capabilities.rssi
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.rx_link_speed
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                id = R.string.link_speed_value,
-                                capabilities.rxLinkSpeedMbps,
-                                capabilities.linkSpeedUnits
+                                    R.string.yes_string
+                                else R.string.no_string
                             ),
                             modifier = Modifier
                                 .padding(start = 8.dp)
@@ -1121,68 +954,14 @@ private fun WifiCapabilities(
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
                         Text(
-                            text = stringResource(
-                                id = R.string.tx_link_speed
-                            ),
+                            text = stringResource(id = R.string.bssid),
                             modifier = Modifier
                                 .padding(end = 8.dp)
                                 .weight(1f),
                             style = textStyle
                         )
                         Text(
-                            text = stringResource(
-                                id = R.string.link_speed_value,
-                                capabilities.txLinkSpeedMbps,
-                                capabilities.linkSpeedUnits
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.wifi_standard
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                capabilities.wifiStandardStringId
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.is_restricted
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                id = if (capabilities.isRestricted)
-                                    R.string.true_string
-                                else R.string.false_string
-                            ),
+                            text = capabilities.bssid,
                             modifier = Modifier
                                 .padding(start = 8.dp)
                                 .weight(1f),
@@ -1197,7 +976,7 @@ private fun WifiCapabilities(
 
 @Composable
 private fun WifiProperties(
-    properties: WifiProperties,
+    wifiProperties: StateFlow<WifiProperties>,
     modifier: Modifier = Modifier
 ) {
     Card(modifier = modifier) {
@@ -1240,7 +1019,75 @@ private fun WifiProperties(
                 ) {
                     val textStyle = MaterialTheme.typography.bodyLarge
 
-                    Row {
+                    val properties by wifiProperties
+                        .collectAsStateWithLifecycle()
+
+                    Row(
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(
+                                id = R.string.ip_address
+                            ),
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .weight(1f),
+                            style = textStyle
+                        )
+                        Text(
+                            text = properties.ipAddress,
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .weight(1f),
+                            style = textStyle
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(
+                                id = R.string.nat64_prefix
+                            ),
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .weight(1f),
+                            style = textStyle
+                        )
+                        Text(
+                            text = properties.nat64Prefix,
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .weight(1f),
+                            style = textStyle
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(
+                                id = R.string.interface_name
+                            ),
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .weight(1f),
+                            style = textStyle
+                        )
+                        Text(
+                            text = properties.interfaceName,
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .weight(1f),
+                            style = textStyle
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
                         Text(
                             text = stringResource(
                                 id = R.string.dhcp_server_address
@@ -1251,7 +1098,7 @@ private fun WifiProperties(
                             style = textStyle
                         )
                         Text(
-                            text = properties.dhcpServerAddress,
+                            text = properties.dhcpServer,
                             modifier = Modifier
                                 .padding(start = 8.dp)
                                 .weight(1f),
@@ -1292,27 +1139,6 @@ private fun WifiProperties(
                     ) {
                         Text(
                             text = stringResource(
-                                id = R.string.domains
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = properties.domains,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
                                 id = R.string.http_proxy
                             ),
                             modifier = Modifier
@@ -1328,270 +1154,8 @@ private fun WifiProperties(
                             style = textStyle
                         )
                     }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.interface_name
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = properties.interfaceName,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.link_addresses
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Column(
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f)
-                        ) {
-                            for (address in properties.linkAddresses) {
-                                Text(
-                                    text = address,
-                                    modifier = Modifier
-                                        .padding(top = 4.dp),
-                                    style = textStyle
-                                )
-                            }
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.mtu
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = properties.mtu.toString(),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.nat64_prefix
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = properties.nat64Prefix,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.private_dns_server_name
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = properties.privateDnsServerName,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.routes
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Column(
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f)
-                        ) {
-                            for (route in properties.routes) {
-                                Text(
-                                    text = route,
-                                    modifier = Modifier
-                                        .padding(top = 4.dp),
-                                    style = textStyle
-                                )
-                            }
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.is_private_dns_active
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = properties.isPrivateDnsActive.toString(),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.is_wake_on_lan_supported
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = properties.isWakeOnLanSupported.toString(),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
                 }
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun GraphDrawerPreview() {
-    val dequeCapacity = 60
-    val horizontalCapacity = 60
-    val rssiVerticalCapacity = -127
-    val speedVerticalCapacity = 144
-
-    val rssiPoints = ArrayDeque<Int>(horizontalCapacity)
-    val speedPoints = ArrayDeque<Int>(horizontalCapacity)
-
-    for (index in 0 until horizontalCapacity) {
-        val rssi = Random.nextInt(
-            from = rssiVerticalCapacity + 9,
-            until = -9
-        )
-
-        val speed = Random.nextInt(
-            from = 10,
-            until = speedVerticalCapacity - 9
-        )
-
-        rssiPoints.add(rssi)
-        speedPoints.add(speed)
-    }
-
-    Column(modifier = Modifier.padding(16.dp)) {
-        RssiGraph(
-            latestRssi = -55,
-            rssiValues = rssiPoints,
-            dequeCapacity = dequeCapacity,
-            horizontalCapacity = horizontalCapacity,
-            verticalCapacity = rssiVerticalCapacity,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(256.dp)
-        )
-        SpeedGraph(
-            latestSpeed = 11,
-            speedValues = speedPoints,
-            dequeCapacity = dequeCapacity,
-            horizontalCapacity = horizontalCapacity,
-            verticalCapacity = rssiVerticalCapacity,
-            linkSpeedUnits = "Mbps",
-            modifier = Modifier
-                .padding(top = 16.dp)
-                .fillMaxWidth()
-                .height(256.dp)
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun ToolsButtonsPreview() {
-    ToolsButtons(
-        navigateToPlanning = { /*TODO*/ },
-        navigateToHeats = { /*TODO*/ },
-        modifier = Modifier.padding(16.dp)
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun CapabilitiesPreview() {
-    WifiCapabilities(
-        capabilities = WifiCapabilities(),
-        modifier = Modifier.padding(16.dp)
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun PropertiesPreview() {
-    WifiProperties(
-        properties = WifiProperties(),
-        modifier = Modifier.padding(16.dp)
-    )
 }

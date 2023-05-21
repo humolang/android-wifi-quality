@@ -19,14 +19,14 @@ class LinkSpeedValue(
             return wifiInfo.linkSpeed
         }
 
-    private val _latestSpeed = flow {
+    private val _latestLinkSpeed = flow {
         while (true) {
             emit(_linkSpeed)
             delay(_refreshIntervalMs)
         }
     }
-    val latestSpeed: Flow<Int>
-        get() = _latestSpeed
+    val latestLinkSpeed: Flow<Int>
+        get() = _latestLinkSpeed
 
     val linkSpeedUnits: String
         get() = WifiInfo.LINK_SPEED_UNITS

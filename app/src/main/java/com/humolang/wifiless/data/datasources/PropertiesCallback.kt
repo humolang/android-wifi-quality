@@ -12,6 +12,7 @@ import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import java.net.Inet4Address
 
 class PropertiesCallback(
     private val connectivityManager: ConnectivityManager,
@@ -20,35 +21,6 @@ class PropertiesCallback(
 
     private val _wifiProperties = callbackFlow {
         val propertiesCallback = object : NetworkCallback() {
-
-//            override fun onAvailable(network: Network) {
-//                super.onAvailable(network)
-//            }
-//
-//            override fun onLosing(
-//                network: Network,
-//                maxMsToLive: Int
-//            ) {
-//                super.onLosing(network, maxMsToLive)
-//            }
-//
-//            override fun onLost(network: Network) {
-//                super.onLost(network)
-//            }
-//
-//            override fun onUnavailable() {
-//                super.onUnavailable()
-//            }
-//
-//            override fun onCapabilitiesChanged(
-//                network: Network,
-//                networkCapabilities: NetworkCapabilities
-//            ) {
-//                super.onCapabilitiesChanged(
-//                    network,
-//                    networkCapabilities
-//                )
-//            }
 
             override fun onLinkPropertiesChanged(
                 network: Network,
@@ -59,43 +31,48 @@ class PropertiesCallback(
                     linkProperties
                 )
 
-                val isAndroidP = Build.VERSION.SDK_INT >=
-                        Build.VERSION_CODES.P
-                val isAndroidQ = Build.VERSION.SDK_INT >=
-                        Build.VERSION_CODES.Q
                 val isAndroidR = Build.VERSION.SDK_INT >=
                         Build.VERSION_CODES.R
 
-                val properties = WifiProperties(
-                    dhcpServerAddress = if (isAndroidR)
-                        linkProperties.dhcpServerAddress?.toString() ?: "dhcpServerAddress"
-                    else "",
+                val linkAddresses = linkProperties.linkAddresses
+                var ipString = UNKNOWN
 
-                    dnsServers = linkProperties.dnsServers.map { it.toString() },
-                    domains = linkProperties.domains ?: "domains",
-                    httpProxy = linkProperties.httpProxy?.toString() ?: "httpProxy",
-                    interfaceName = linkProperties.interfaceName ?: "interfaceName",
-                    linkAddresses = linkProperties.linkAddresses.map { it.toString() },
-                    mtu = if (isAndroidQ)
-                        linkProperties.mtu
-                    else -1,
+                for (address in linkAddresses) {
+                    try {
+                        val ip4 = address.address as Inet4Address
+                        ipString = ip4.hostAddress
+                            ?: UNKNOWN
+
+                        break
+                    } catch (exception: ClassCastException) {
+                        continue
+                    }
+                }
+
+                val properties = WifiProperties(
+                    ipAddress = ipString,
 
                     nat64Prefix = if (isAndroidR)
-                        linkProperties.nat64Prefix?.toString() ?: "nat64Prefix"
-                    else "nat64Prefix",
+                        linkProperties.nat64Prefix
+                            ?.address?.hostAddress ?: UNKNOWN
+                    else "Requires Android 11",
 
-                    privateDnsServerName = if (isAndroidP)
-                        linkProperties.privateDnsServerName ?: "privateDnsServerName"
-                    else "privateDnsServerName",
+                    interfaceName = linkProperties.interfaceName
+                        ?: UNKNOWN,
 
-                    routes = linkProperties.routes.map { it.toString() },
-                    isPrivateDnsActive = if (isAndroidP)
-                        linkProperties.isPrivateDnsActive
-                    else false,
+                    dhcpServer = if (isAndroidR)
+                        linkProperties.dhcpServerAddress
+                            ?.hostAddress ?: UNKNOWN
+                    else "Requires Android 11",
 
-                    isWakeOnLanSupported = if (isAndroidR)
-                        linkProperties.isWakeOnLanSupported
-                    else false
+                    dnsServers = linkProperties.dnsServers
+                        .map { address ->
+                            address.hostAddress
+                                ?: UNKNOWN
+                        },
+
+                    httpProxy = linkProperties.httpProxy
+                        ?.host ?: UNKNOWN
                 )
 
                 trySendBlocking(properties)
@@ -103,16 +80,6 @@ class PropertiesCallback(
                         close(throwable)
                     }
             }
-
-//            override fun onBlockedStatusChanged(
-//                network: Network,
-//                blocked: Boolean
-//            ) {
-//                super.onBlockedStatusChanged(
-//                    network,
-//                    blocked
-//                )
-//            }
         }
 
         connectivityManager
