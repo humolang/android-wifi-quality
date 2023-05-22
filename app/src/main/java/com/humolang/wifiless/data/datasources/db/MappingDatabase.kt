@@ -18,7 +18,7 @@ import com.humolang.wifiless.data.datasources.db.entities.Heat
         Column::class,
         Block::class
     ],
-    version = 1,
+    version = 3,
     exportSchema = false
 )
 abstract class MappingDatabase : RoomDatabase() {

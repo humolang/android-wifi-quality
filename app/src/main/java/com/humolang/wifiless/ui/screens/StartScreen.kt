@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.humolang.wifiless.R
+import com.humolang.wifiless.data.datasources.DEFAULT_HEAT_ID
 import com.humolang.wifiless.data.datasources.model.WifiCapabilities
 import com.humolang.wifiless.data.datasources.model.WifiProperties
 import com.humolang.wifiless.ui.states.LinkSpeedGraphState
@@ -65,7 +66,7 @@ import kotlinx.coroutines.flow.StateFlow
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StartScreen(
-    navigateToPlanning: () -> Unit,
+    navigateToPlanning: (Long) -> Unit,
     navigateToHeats: () -> Unit,
     startViewModel: StartViewModel =
         viewModel(factory = StartViewModel.Factory)
@@ -124,11 +125,11 @@ private fun StartTopBar(
 //        actions = {
 //            IconButton(onClick = { /* doSomething() */ }) {
 //                Icon(
-//                    imageVector = Icons.TwoTone.Settings,
-//                    contentDescription = stringResource(id = R.string.settings)
+//                    imageVector = Icons.TwoTone.MoreVert,
+//                    contentDescription = stringResource(id = R.string.menu)
 //                )
 //            }
-//        }
+//        },
         scrollBehavior = scrollBehavior,
         modifier = modifier
     )
@@ -136,7 +137,7 @@ private fun StartTopBar(
 
 @Composable
 private fun StartContent(
-    navigateToPlanning: () -> Unit,
+    navigateToPlanning: (Long) -> Unit,
     navigateToHeats: () -> Unit,
     startViewModel: StartViewModel,
     modifier: Modifier = Modifier
@@ -677,7 +678,7 @@ private fun createGraph(
 
 @Composable
 private fun ToolsButtons(
-    navigateToPlanning: () -> Unit,
+    navigateToPlanning: (Long) -> Unit,
     navigateToHeats: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -692,7 +693,9 @@ private fun ToolsButtons(
                 val buttonShape = MaterialTheme.shapes.small
 
                 ElevatedButton(
-                    onClick = navigateToPlanning,
+                    onClick = {
+                        navigateToPlanning(DEFAULT_HEAT_ID)
+                    },
                     modifier = Modifier
                         .padding(end = 8.dp)
                         .weight(1f),

@@ -9,15 +9,15 @@ data class Heat(
 
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "heat_id")
-    val id: Int = 0,
+    val id: Long = 0,
 
-    val name: String,
-    val length: Int,
-    val width: Int,
+    val name: String = "My Plan",
+    val columns: Int = 3,
+    val rows: Int = 3,
 
     @ColumnInfo(name = "creation_timestamp")
-    val creationTimestamp: Long,
+    val creationTimestamp: Long = 0L,
 
     @ColumnInfo(name = "modification_timestamp")
-    val modificationTimestamp: Long
+    val modificationTimestamp: Long = 0L
 )

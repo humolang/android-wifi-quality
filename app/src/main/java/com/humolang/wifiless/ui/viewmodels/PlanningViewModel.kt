@@ -7,9 +7,12 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.humolang.wifiless.WiFilessApplication
+import com.humolang.wifiless.data.datasources.DEFAULT_HEAT_ID
+import com.humolang.wifiless.data.datasources.db.entities.Block
+import com.humolang.wifiless.data.datasources.db.entities.Column
 import com.humolang.wifiless.data.datasources.db.entities.Heat
+import com.humolang.wifiless.data.datasources.model.BlockType
 import com.humolang.wifiless.data.repositories.PlanningTool
-import com.humolang.wifiless.ui.states.PlanningUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,62 +22,83 @@ class PlanningViewModel(
     private val planningTool: PlanningTool
 ) : ViewModel() {
 
-    private val _planningUiState =
-        MutableStateFlow(PlanningUiState(
-            blocks = emptyMap()
-        ))
-    val planningUiState: StateFlow<PlanningUiState>
-        get() = _planningUiState.asStateFlow()
+    private val _heat =
+        MutableStateFlow(Heat())
+    val heat: StateFlow<Heat>
+        get() = _heat.asStateFlow()
 
-    fun initialHeat(
-        name: String,
-        length: String,
-        width: String
-    ) {
-        viewModelScope.launch {
-            val heatId = planningTool.insertHeat(name, length, width)
-            val heat = planningTool.loadHeatById(heatId.toInt())
+    private val _blocks =
+        MutableStateFlow(emptyMap<Column, List<Block>>())
+    val blocks: StateFlow<Map<Column, List<Block>>>
+        get() = _blocks.asStateFlow()
 
-            _planningUiState.value = _planningUiState.value.copy(
-                heat = heat
-            )
-
-            for (column in 0 until heat.length) {
-                launch { initialColumn(heat, column) }
-            }
-
-            planningTool.loadBlocks(heat.id)
-            launch { collectBlocks() }
-        }
-    }
-
-    private suspend fun initialColumn(heat: Heat, column: Int) {
-        val columnId = planningTool
-            .insertColumn(heat.id, column)
-
-        for (row in 0 until heat.width) {
-            planningTool.insertBlock(columnId.toInt(), row)
+    private suspend fun collectHeat() {
+        planningTool.heat.collect { heat ->
+            _heat.value = heat
         }
     }
 
     private suspend fun collectBlocks() {
         planningTool.blocks.collect { blocks ->
-            _planningUiState.value = _planningUiState.value.copy(
-                blocks = blocks
-            )
+            _blocks.value = blocks
         }
     }
 
-    fun resetHeat() {
+    fun loadHeatmap(heatId: Long) {
         viewModelScope.launch {
-            val heat = _planningUiState.value.heat
-            if (heat != null) {
-                planningTool.deleteHeat(heat)
-
-                _planningUiState.value = _planningUiState.value.copy(
-                    heat = null
-                )
+            val id = if (heatId == DEFAULT_HEAT_ID) {
+                planningTool.initialHeat()
+            } else {
+                heatId
             }
+
+            planningTool.loadHeat(id)
+            planningTool.loadBlocks(id)
+
+            launch { collectHeat() }
+            launch { collectBlocks() }
+        }
+    }
+
+    fun updateBlockType(
+        block: Block,
+        type: BlockType
+    ) {
+        viewModelScope.launch {
+            planningTool.updateBlockType(block, type)
+        }
+    }
+
+    fun updateHeatName(
+        heat: Heat,
+        name: String
+    ) {
+        viewModelScope.launch {
+            planningTool.updateHeatName(heat, name)
+        }
+    }
+
+    fun insertTopRow(heatId: Long) {
+        viewModelScope.launch {
+            planningTool.insertTopRow(heatId)
+        }
+    }
+
+    fun insertBottomRow(heatId: Long) {
+        viewModelScope.launch {
+            planningTool.insertBottomRow(heatId)
+        }
+    }
+
+    fun insertRightColumn(heatId: Long) {
+        viewModelScope.launch {
+            planningTool.insertRightColumn(heatId)
+        }
+    }
+
+    fun insertLeftColumn(heatId: Long) {
+        viewModelScope.launch {
+            planningTool.insertLeftColumn(heatId)
         }
     }
 

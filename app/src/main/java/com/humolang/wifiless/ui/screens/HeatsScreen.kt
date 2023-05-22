@@ -65,7 +65,7 @@ private fun HeatItem(
             RoundedCornerShape(4.dp)
         )
         .clickable {
-            onHeatClicked(heat.id)
+//            onHeatClicked(heat.id)
         }
     ) {
         Text(

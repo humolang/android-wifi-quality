@@ -16,8 +16,14 @@ interface ColumnDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(vararg columns: Column): List<Long>
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(columns: List<Column>): List<Long>
+
     @Update
     suspend fun update(vararg columns: Column): Int
+
+    @Update
+    suspend fun update(columns: List<Column>): Int
 
     @Delete
     suspend fun delete(vararg columns: Column): Int
@@ -26,5 +32,16 @@ interface ColumnDao {
             "join blocks on columns.column_id = blocks.column_id " +
             "where heat_id = :heatId " +
             "order by columns.x, blocks.y asc")
-    fun loadBlocks(heatId: Int): Flow<Map<Column, List<Block>>>
+    fun loadObservableBlocks(heatId: Long): Flow<Map<Column, List<Block>>>
+
+    @Query("select * from columns " +
+            "join blocks on columns.column_id = blocks.column_id " +
+            "where heat_id = :heatId " +
+            "order by columns.x, blocks.y asc")
+    suspend fun loadBlocks(heatId: Long): Map<Column, List<Block>>
+
+    @Query("select * from columns " +
+            "where heat_id = :heatId " +
+            "order by x asc")
+    suspend fun loadColumns(heatId: Long): List<Column>
 }

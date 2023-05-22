@@ -6,6 +6,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.humolang.wifiless.data.datasources.DEFAULT_HEAT_ID
 import com.humolang.wifiless.ui.screens.HeatsScreen
 import com.humolang.wifiless.ui.screens.MappingScreen
 import com.humolang.wifiless.ui.screens.PlanningScreen
@@ -17,24 +18,45 @@ fun WiFilessNavHost(navController: NavHostController) {
         navController = navController,
         startDestination = START_SCREEN_STRING
     ) {
+
         composable(START_SCREEN_STRING) {
             StartScreen(
-                navigateToPlanning = {
-                    navController.navigate(PLANNING_SCREEN_STRING)
+                navigateToPlanning = { navArg ->
+                    navController.navigate(
+                        route = "$PLANNING_SCREEN_STRING/$navArg"
+                    )
                 },
                 navigateToHeats = {
                     navController.navigate(HEATS_SCREEN_STRING)
                 }
             )
         }
-        composable(PLANNING_SCREEN_STRING) {
-            PlanningScreen(
-                onCancelClicked = { navController.popBackStack() },
-                navigateToMapping = { heatId ->
-                    navController.navigate("$MAPPING_SCREEN_STRING/$heatId")
-                }
+
+        composable(
+            route = PLANNING_SCREEN_WITH_ARG,
+            arguments = listOf(
+                navArgument(HEAT_ID_ARG) { type = NavType.LongType }
             )
+        ) { backStackEntry ->
+            val heatId = backStackEntry
+                .arguments?.getLong(
+                    HEAT_ID_ARG,
+                    DEFAULT_HEAT_ID
+                )
+
+            if (heatId != null) {
+                PlanningScreen(
+                    heatId = heatId,
+                    popBackStack = { navController.popBackStack() },
+                    navigateToMapping = { navArg ->
+                        navController.navigate(
+                            route = "$MAPPING_SCREEN_STRING/$navArg"
+                        )
+                    }
+                )
+            }
         }
+
         composable(
             route = MAPPING_SCREEN_WITH_ARG,
             arguments = listOf(
@@ -55,10 +77,13 @@ fun WiFilessNavHost(navController: NavHostController) {
                 )
             }
         }
+
         composable(HEATS_SCREEN_STRING) {
             HeatsScreen(
-                navigateToMapping = { heatId ->
-                    navController.navigate("$MAPPING_SCREEN_STRING/$heatId")
+                navigateToMapping = { navArg ->
+                    navController.navigate(
+                        route = "$MAPPING_SCREEN_STRING/$navArg"
+                    )
                 }
             )
         }
