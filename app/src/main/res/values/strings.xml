@@ -49,6 +49,8 @@
     <string name="add_column_left">Add a column to the left</string>
     <string name="edit_plan">Edit plan</string>
     <string name="delete_plan">Delete plan</string>
+    <string name="heatmap_options">Heatmap options</string>
+    <string name="heat_size">Size %1$dx%2$d</string>
 
     <string name="capabilities">Capabilities</string>
     <string name="downstream_bandwidth">Downstream</string>
