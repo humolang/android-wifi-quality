@@ -16,12 +16,10 @@ import androidx.compose.material.icons.twotone.Add
 import androidx.compose.material.icons.twotone.ArrowBack
 import androidx.compose.material.icons.twotone.Delete
 import androidx.compose.material.icons.twotone.Edit
-import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -70,11 +68,7 @@ fun HeatsScreen(
             FloatingActionButton(
                 onClick = {
                     navigateToPlanning(DEFAULT_HEAT_ID)
-                },
-                containerColor = BottomAppBarDefaults
-                    .bottomAppBarFabColor,
-                elevation = FloatingActionButtonDefaults
-                    .bottomAppBarFabElevation()
+                }
             ) {
                 Icon(
                     Icons.TwoTone.Add,
@@ -168,7 +162,7 @@ private fun HeatsContent(
             .spacedBy(8.dp),
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
     ) {
         items(heats) { heat ->
             HeatItem(
