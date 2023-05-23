@@ -7,8 +7,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.humolang.wifiless.WiFilessApplication
+import com.humolang.wifiless.data.datasources.db.entities.Heat
 import com.humolang.wifiless.data.repositories.HeatsRepository
-import com.humolang.wifiless.ui.states.HeatsUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,12 +18,11 @@ class HeatsViewModel(
     private val heatsRepository: HeatsRepository
 ) : ViewModel() {
 
-    private val _heatsUiState =
-        MutableStateFlow(HeatsUiState(
-            heats = emptyList()
-        ))
-    val heatsUiState: StateFlow<HeatsUiState>
-        get() = _heatsUiState.asStateFlow()
+    private val _heats = MutableStateFlow(
+        emptyList<Heat>()
+    )
+    val heats: StateFlow<List<Heat>>
+        get() = _heats.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -33,9 +32,13 @@ class HeatsViewModel(
 
     private suspend fun collectHeats() {
         heatsRepository.heats.collect { heats ->
-            _heatsUiState.value = _heatsUiState.value.copy(
-                heats = heats
-            )
+            _heats.value = heats
+        }
+    }
+
+    fun deleteHeat(heat: Heat) {
+        viewModelScope.launch {
+            heatsRepository.deleteHeat(heat)
         }
     }
 

@@ -11,4 +11,8 @@ class HeatsRepository(
     private val _heats = heatDao.loadHeats()
     val heats: Flow<List<Heat>>
         get() = _heats
+
+    suspend fun deleteHeat(heat: Heat) {
+        heatDao.delete(heat)
+    }
 }

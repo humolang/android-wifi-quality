@@ -81,6 +81,12 @@ fun WiFilessNavHost(navController: NavHostController) {
 
         composable(HEATS_SCREEN_STRING) {
             HeatsScreen(
+                popBackStack = { navController.popBackStack() },
+                navigateToPlanning = { navArg ->
+                    navController.navigate(
+                        route = "$PLANNING_SCREEN_STRING/$navArg"
+                    )
+                },
                 navigateToMapping = { navArg ->
                     navController.navigate(
                         route = "$MAPPING_SCREEN_STRING/$navArg"
