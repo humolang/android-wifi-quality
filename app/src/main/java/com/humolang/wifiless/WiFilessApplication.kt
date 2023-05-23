@@ -2,27 +2,26 @@ package com.humolang.wifiless
 
 import android.app.Application
 import android.content.Context
-import android.hardware.Sensor
-import android.hardware.SensorManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.net.wifi.WifiManager
-import com.humolang.wifiless.data.datasources.AccelerometerCallback
-import com.humolang.wifiless.data.datasources.GyroscopeCallback
-import com.humolang.wifiless.data.datasources.IpCallback
+import com.humolang.wifiless.data.datasources.CapabilitiesCallback
 import com.humolang.wifiless.data.datasources.LinkSpeedValue
-import com.humolang.wifiless.data.datasources.MagneticCallback
-import com.humolang.wifiless.data.datasources.OrientationCallback
+import com.humolang.wifiless.data.datasources.PropertiesCallback
 import com.humolang.wifiless.data.datasources.RssiValue
-import com.humolang.wifiless.data.datasources.WifiCallback
+import com.humolang.wifiless.data.datasources.db.MappingDatabase
+import com.humolang.wifiless.data.repositories.HeatsRepository
 import com.humolang.wifiless.data.repositories.MappingTool
+import com.humolang.wifiless.data.repositories.PlanningTool
 import com.humolang.wifiless.data.repositories.WifiParameters
 
 class WiFilessApplication : Application() {
 
     lateinit var wifiParameters: WifiParameters
+    lateinit var planningTool: PlanningTool
     lateinit var mappingTool: MappingTool
+    lateinit var heatsRepository: HeatsRepository
 
     override fun onCreate() {
         super.onCreate()
@@ -30,71 +29,51 @@ class WiFilessApplication : Application() {
         val connectivityManager = getSystemService(
             Context.CONNECTIVITY_SERVICE
         ) as ConnectivityManager
-        val wifiRequest = NetworkRequest.Builder()
-            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-            .build()
-
-        val wifiCallback = WifiCallback(
-            connectivityManager,
-            wifiRequest
-        )
-        val ipCallback = IpCallback(
-            connectivityManager,
-            wifiRequest
-        )
-
         val wifiManager = getSystemService(
             Context.WIFI_SERVICE
         ) as WifiManager
+
+        val wifiRequest = NetworkRequest.Builder()
+            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .build()
+
         val rssiValue = RssiValue(wifiManager)
         val linkSpeedValue = LinkSpeedValue(wifiManager)
+        val capabilitiesCallback = CapabilitiesCallback(
+            connectivityManager = connectivityManager,
+            wifiManager = wifiManager,
+            wifiRequest = wifiRequest
+        )
+        val propertiesCallback = PropertiesCallback(
+            connectivityManager = connectivityManager,
+            wifiRequest = wifiRequest
+        )
 
         wifiParameters = WifiParameters(
-            wifiCallback = wifiCallback,
-            ipCallback = ipCallback,
             rssiValue = rssiValue,
-            linkSpeedValue = linkSpeedValue
+            linkSpeedValue = linkSpeedValue,
+            capabilitiesCallback = capabilitiesCallback,
+            propertiesCallback = propertiesCallback
         )
 
-        val sensorManager = getSystemService(
-            Context.SENSOR_SERVICE
-        ) as SensorManager
+        val database = MappingDatabase
+            .getDatabase(this)
 
-        val linearAccelerationSensor: Sensor? = sensorManager
-            .getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
-        val accelerometerCallback = AccelerometerCallback(
-            sensorManager = sensorManager,
-            accelerometerSensor = linearAccelerationSensor
-        )
-
-        val magneticSensor: Sensor? = sensorManager
-            .getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
-        val magneticCallback = MagneticCallback(
-            sensorManager = sensorManager,
-            magneticSensor = magneticSensor
-        )
-
-        val accelerationSensor: Sensor? = sensorManager
-            .getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        val orientationCallback = OrientationCallback(
-            sensorManager = sensorManager,
-            accelerometerSensor = accelerationSensor,
-            magneticSensor = magneticSensor
-        )
-
-        val gyroscopeSensor: Sensor? = sensorManager
-            .getDefaultSensor(Sensor.TYPE_GYROSCOPE)
-        val gyroscopeCallback = GyroscopeCallback(
-            sensorManager = sensorManager,
-            gyroscopeSensor = gyroscopeSensor
+        planningTool = PlanningTool(
+            heatDao = database.heatDao(),
+            columnDao = database.columnDao(),
+            blockDao = database.blockDao()
         )
 
         mappingTool = MappingTool(
-            accelerometerCallback = accelerometerCallback,
-            magneticCallback = magneticCallback,
-            orientationCallback = orientationCallback,
-            gyroscopeCallback = gyroscopeCallback
+            heatDao = database.heatDao(),
+            columnDao = database.columnDao(),
+            blockDao = database.blockDao(),
+            rssiValue = rssiValue
+        )
+
+        heatsRepository = HeatsRepository(
+            heatDao = database.heatDao()
         )
     }
 }

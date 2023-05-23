@@ -7,17 +7,19 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.humolang.wifiless.WiFilessApplication
+import com.humolang.wifiless.data.datasources.DEFAULT_HEAT_ID
 import com.humolang.wifiless.data.datasources.db.entities.Block
 import com.humolang.wifiless.data.datasources.db.entities.Column
 import com.humolang.wifiless.data.datasources.db.entities.Heat
-import com.humolang.wifiless.data.repositories.MappingTool
+import com.humolang.wifiless.data.datasources.model.BlockType
+import com.humolang.wifiless.data.repositories.PlanningTool
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class MappingViewModel(
-    private val mappingTool: MappingTool
+class PlanningViewModel(
+    private val planningTool: PlanningTool
 ) : ViewModel() {
 
     private val _heat =
@@ -32,30 +34,72 @@ class MappingViewModel(
         get() = _blocks.asStateFlow()
 
     private suspend fun collectHeat() {
-        mappingTool.heat.collect { heat ->
+        planningTool.heat.collect { heat ->
             _heat.value = heat
         }
     }
 
     private suspend fun collectBlocks() {
-        mappingTool.blocks.collect { blocks ->
+        planningTool.blocks.collect { blocks ->
             _blocks.value = blocks
         }
     }
 
     fun loadHeatmap(heatId: Long) {
         viewModelScope.launch {
-            mappingTool.loadHeat(heatId)
-            mappingTool.loadBlocks(heatId)
+            val id = if (heatId == DEFAULT_HEAT_ID) {
+                planningTool.initialHeat()
+            } else {
+                heatId
+            }
+
+            planningTool.loadHeat(id)
+            planningTool.loadBlocks(id)
 
             launch { collectHeat() }
             launch { collectBlocks() }
         }
     }
 
-    fun checkRssi(block: Block) {
+    fun updateBlockType(
+        block: Block,
+        type: BlockType
+    ) {
         viewModelScope.launch {
-            mappingTool.checkRssi(block)
+            planningTool.updateBlockType(block, type)
+        }
+    }
+
+    fun updateHeatName(
+        heat: Heat,
+        name: String
+    ) {
+        viewModelScope.launch {
+            planningTool.updateHeatName(heat, name)
+        }
+    }
+
+    fun insertTopRow(heatId: Long) {
+        viewModelScope.launch {
+            planningTool.insertTopRow(heatId)
+        }
+    }
+
+    fun insertBottomRow(heatId: Long) {
+        viewModelScope.launch {
+            planningTool.insertBottomRow(heatId)
+        }
+    }
+
+    fun insertRightColumn(heatId: Long) {
+        viewModelScope.launch {
+            planningTool.insertRightColumn(heatId)
+        }
+    }
+
+    fun insertLeftColumn(heatId: Long) {
+        viewModelScope.launch {
+            planningTool.insertLeftColumn(heatId)
         }
     }
 
@@ -63,11 +107,11 @@ class MappingViewModel(
 
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                val mappingTool = (this[APPLICATION_KEY]
-                        as WiFilessApplication).mappingTool
+                val planningTool = (this[APPLICATION_KEY]
+                        as WiFilessApplication).planningTool
 
-                MappingViewModel(
-                    mappingTool = mappingTool
+                PlanningViewModel(
+                    planningTool = planningTool
                 )
             }
         }

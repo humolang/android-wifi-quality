@@ -7,10 +7,10 @@ import kotlinx.coroutines.flow.flow
 
 class RssiValue(
     private val wifiManager: WifiManager,
-    private val refreshIntervalMs: Long = 100
+    private val _refreshIntervalMs: Long = 100L
 ) {
 
-    private val _rssi: Int
+    val rssi: Int
         get() {
             val wifiInfo = wifiManager
                 .connectionInfo
@@ -20,10 +20,21 @@ class RssiValue(
 
     private val _latestRssi = flow {
         while (true) {
-            emit(_rssi)
-            delay(refreshIntervalMs)
+            emit(rssi)
+            delay(_refreshIntervalMs)
         }
     }
     val latestRssi: Flow<Int>
         get() = _latestRssi
+
+    private var _minRssi = -127
+    val minRssi: Int
+        get() = _minRssi
+
+    val rssiRefreshIntervalMs: Long
+        get() = _refreshIntervalMs
+
+    fun updateMinRssi(newValue: Int) {
+        _minRssi = newValue
+    }
 }
