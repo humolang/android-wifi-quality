@@ -68,7 +68,6 @@ import com.humolang.wifiless.ui.viewmodels.PlanningViewModel
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.math.abs
 
-@SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlanningScreen(

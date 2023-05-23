@@ -27,8 +27,9 @@ class PlanningViewModel(
     val heat: StateFlow<Heat>
         get() = _heat.asStateFlow()
 
-    private val _blocks =
-        MutableStateFlow(emptyMap<Column, List<Block>>())
+    private val _blocks = MutableStateFlow(
+        emptyMap<Column, List<Block>>()
+    )
     val blocks: StateFlow<Map<Column, List<Block>>>
         get() = _blocks.asStateFlow()
 

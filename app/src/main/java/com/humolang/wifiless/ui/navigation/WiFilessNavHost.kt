@@ -60,19 +60,20 @@ fun WiFilessNavHost(navController: NavHostController) {
         composable(
             route = MAPPING_SCREEN_WITH_ARG,
             arguments = listOf(
-                navArgument(HEAT_ID_ARG) { type = NavType.IntType }
+                navArgument(HEAT_ID_ARG) { type = NavType.LongType }
             )
         ) { backStackEntry ->
             val heatId = backStackEntry
-                .arguments?.getInt(HEAT_ID_ARG)
+                .arguments?.getLong(HEAT_ID_ARG)
 
             if (heatId != null) {
                 MappingScreen(
                     heatId = heatId,
+                    popBackStack = { navController.popBackStack() },
                     navigateToStart = {
-                        navController.navigate(START_SCREEN_STRING) {
-                            popUpTo(START_SCREEN_STRING) { inclusive = true }
-                        }
+                        navController.navigate(
+                            route = START_SCREEN_STRING
+                        )
                     }
                 )
             }

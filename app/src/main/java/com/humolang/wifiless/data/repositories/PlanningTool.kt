@@ -100,7 +100,7 @@ class PlanningTool(
     }
 
     fun loadHeat(heatId: Long) {
-        _heat = heatDao.loadObservableHeatById(heatId)
+        _heat = heatDao.loadObservableHeat(heatId)
     }
 
     fun loadBlocks(heatId: Long) {

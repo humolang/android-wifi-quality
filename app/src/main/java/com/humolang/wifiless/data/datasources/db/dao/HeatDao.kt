@@ -25,7 +25,7 @@ interface HeatDao {
     suspend fun loadHeatById(id: Long): Heat
 
     @Query("select * from heats where heat_id = :id")
-    fun loadObservableHeatById(id: Long): Flow<Heat>
+    fun loadObservableHeat(id: Long): Flow<Heat>
 
     @Query("select * from heats order by modification_timestamp")
     fun loadHeats(): Flow<List<Heat>>

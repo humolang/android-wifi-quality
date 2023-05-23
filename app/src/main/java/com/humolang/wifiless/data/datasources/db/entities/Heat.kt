@@ -11,7 +11,7 @@ data class Heat(
     @ColumnInfo(name = "heat_id")
     val id: Long = 0,
 
-    val name: String = "My Plan",
+    val name: String = "New Plan",
     val columns: Int = 3,
     val rows: Int = 3,
 
