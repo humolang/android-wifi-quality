@@ -31,10 +31,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +44,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -160,6 +164,10 @@ private fun PlanningTopBar(
         mutableStateOf(true)
     }
 
+    val nameFieldRequester = remember {
+        FocusRequester()
+    }
+
     TopAppBar(
         modifier = modifier,
         title = {
@@ -173,11 +181,26 @@ private fun PlanningTopBar(
                     overflow = TextOverflow.Ellipsis
                 )
             } else {
-                OutlinedTextField(
+                TextField(
                     value = heatName,
                     onValueChange = { heatName = it},
+                    label = {
+                        Text(
+                            text = stringResource(
+                                id = R.string.plan_name
+                            )
+                        )
+                    },
                     singleLine = true,
+                    modifier = Modifier
+                        .focusRequester(nameFieldRequester)
                 )
+
+                LaunchedEffect(
+                    key1 = nameFieldRequester
+                ) {
+                    nameFieldRequester.requestFocus()
+                }
             }
         },
         navigationIcon = {
@@ -194,20 +217,26 @@ private fun PlanningTopBar(
         },
         actions = {
             if (created) {
-                IconButton(
-                    onClick = {
-                        edited = !edited
-                        onNameAcceptedClicked(heat, heatName)
-                    }
-                ) {
-                    if (edited) {
+                if (edited) {
+                    IconButton(
+                        onClick = {
+                            edited = !edited
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.TwoTone.Edit,
                             contentDescription = stringResource(
                                 id = R.string.edit_name
                             )
                         )
-                    } else {
+                    }
+                } else {
+                    IconButton(
+                        onClick = {
+                            edited = !edited
+                            onNameAcceptedClicked(heat, heatName)
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.TwoTone.Done,
                             contentDescription = stringResource(
@@ -229,6 +258,14 @@ private fun PlanningTopBar(
 //                )
 //            }
         },
+        colors = if (edited)
+            TopAppBarDefaults.topAppBarColors()
+        else TopAppBarDefaults
+            .topAppBarColors(
+                containerColor = MaterialTheme.colorScheme
+                    .surfaceVariant
+            ),
+
         scrollBehavior = scrollBehavior
     )
 }
