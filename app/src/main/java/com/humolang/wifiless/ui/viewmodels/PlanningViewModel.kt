@@ -33,6 +33,25 @@ class PlanningViewModel(
     val blocks: StateFlow<Map<Column, List<Block>>>
         get() = _blocks.asStateFlow()
 
+    suspend fun loadHeatmap(heatId: Long): Long {
+        val id = if (heatId == DEFAULT_HEAT_ID) {
+            planningTool
+                .initialHeatmap()
+        } else {
+            heatId
+        }
+
+        planningTool.loadHeat(id)
+        planningTool.loadBlocks(id)
+
+        viewModelScope.launch {
+            launch { collectHeat() }
+            launch { collectBlocks() }
+        }
+
+        return id
+    }
+
     private suspend fun collectHeat() {
         planningTool.heat.collect { heat ->
             _heat.value = heat
@@ -42,22 +61,6 @@ class PlanningViewModel(
     private suspend fun collectBlocks() {
         planningTool.blocks.collect { blocks ->
             _blocks.value = blocks
-        }
-    }
-
-    fun loadHeatmap(heatId: Long) {
-        viewModelScope.launch {
-            val id = if (heatId == DEFAULT_HEAT_ID) {
-                planningTool.initialHeat()
-            } else {
-                heatId
-            }
-
-            planningTool.loadHeat(id)
-            planningTool.loadBlocks(id)
-
-            launch { collectHeat() }
-            launch { collectBlocks() }
         }
     }
 

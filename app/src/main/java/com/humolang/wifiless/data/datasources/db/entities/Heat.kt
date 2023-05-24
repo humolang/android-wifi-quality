@@ -11,7 +11,7 @@ data class Heat(
 
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "heat_id")
-    val id: Long = 0,
+    val id: Long = 0L,
 
     val name: String = "New Plan",
     val columns: Int = 3,

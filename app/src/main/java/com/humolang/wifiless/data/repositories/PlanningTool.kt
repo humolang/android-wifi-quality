@@ -25,7 +25,7 @@ class PlanningTool(
     val blocks: Flow<Map<Column, List<Block>>>
         get() = _blocks
 
-    suspend fun initialHeat(): Long {
+    suspend fun initialHeatmap(): Long {
         val timestamp = System.currentTimeMillis()
         val heat = Heat(
             creationTimestamp = timestamp,
@@ -97,14 +97,6 @@ class PlanningTool(
             .update(blocks)
 
         return blocksUpdated
-    }
-
-    fun loadHeat(heatId: Long) {
-        _heat = heatDao.loadObservableHeat(heatId)
-    }
-
-    fun loadBlocks(heatId: Long) {
-        _blocks = columnDao.loadObservableBlocks(heatId)
     }
 
     suspend fun updateBlockType(
@@ -240,5 +232,15 @@ class PlanningTool(
             blocksList.add(block)
         }
         insertBlocks(blocksList)
+    }
+
+    fun loadHeat(heatId: Long) {
+        _heat = heatDao
+            .loadObservableHeat(heatId)
+    }
+
+    fun loadBlocks(heatId: Long) {
+        _blocks = columnDao
+            .loadObservableBlocks(heatId)
     }
 }

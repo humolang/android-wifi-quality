@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.ArrowBack
-import androidx.compose.material.icons.twotone.Create
 import androidx.compose.material.icons.twotone.Done
 import androidx.compose.material.icons.twotone.Edit
 import androidx.compose.material3.BottomAppBar
@@ -38,6 +37,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,12 +76,16 @@ fun PlanningScreen(
     planningViewModel: PlanningViewModel =
         viewModel(factory = PlanningViewModel.Factory)
 ) {
+    var id by rememberSaveable {
+        mutableStateOf(heatId)
+    }
+
+    LaunchedEffect(key1 = heatId) {
+        id = planningViewModel.loadHeatmap(id)
+    }
+
     val scrollBehavior = TopAppBarDefaults
         .pinnedScrollBehavior()
-
-    var created by remember {
-        mutableStateOf(false)
-    }
     
     Scaffold(
         modifier = Modifier
@@ -90,7 +94,6 @@ fun PlanningScreen(
             ),
         topBar = {
             PlanningTopBar(
-                created = created,
                 heatFlow = planningViewModel.heat,
                 onNameAcceptedClicked = { heat, name ->
                     planningViewModel.updateHeatName(heat, name)
@@ -104,7 +107,6 @@ fun PlanningScreen(
                 .collectAsStateWithLifecycle()
 
             PlanningBottomBar(
-                created = created,
                 onRowTopClicked = {
                     planningViewModel
                         .insertTopRow(heat.id)
@@ -120,12 +122,6 @@ fun PlanningScreen(
                 onColumnLeftClicked = {
                     planningViewModel
                         .insertLeftColumn(heat.id)
-                },
-                onCreateClicked = {
-                    planningViewModel
-                        .loadHeatmap(heatId)
-
-                    created = !created
                 },
                 navigateToMapping = {
                     navigateToMapping(heat.id)
@@ -144,7 +140,6 @@ fun PlanningScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PlanningTopBar(
-    created: Boolean,
     heatFlow: StateFlow<Heat>,
     onNameAcceptedClicked: (Heat, String) -> Unit,
     popBackStack: () -> Unit,
@@ -170,10 +165,7 @@ private fun PlanningTopBar(
         title = {
             if (edited) {
                 Text(
-                    if (created)
-                        heat.name
-                    else stringResource(id = R.string.room_plan),
-
+                    text = heat.name,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -213,34 +205,32 @@ private fun PlanningTopBar(
             }
         },
         actions = {
-            if (created) {
-                if (edited) {
-                    IconButton(
-                        onClick = {
-                            edited = !edited
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.TwoTone.Edit,
-                            contentDescription = stringResource(
-                                id = R.string.edit_name
-                            )
-                        )
+            if (edited) {
+                IconButton(
+                    onClick = {
+                        edited = !edited
                     }
-                } else {
-                    IconButton(
-                        onClick = {
-                            edited = !edited
-                            onNameAcceptedClicked(heat, heatName)
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.TwoTone.Done,
-                            contentDescription = stringResource(
-                                id = R.string.accept_name
-                            )
+                ) {
+                    Icon(
+                        imageVector = Icons.TwoTone.Edit,
+                        contentDescription = stringResource(
+                            id = R.string.edit_name
                         )
+                    )
+                }
+            } else {
+                IconButton(
+                    onClick = {
+                        edited = !edited
+                        onNameAcceptedClicked(heat, heatName)
                     }
+                ) {
+                    Icon(
+                        imageVector = Icons.TwoTone.Done,
+                        contentDescription = stringResource(
+                            id = R.string.accept_name
+                        )
+                    )
                 }
             }
 
@@ -269,100 +259,77 @@ private fun PlanningTopBar(
 
 @Composable
 private fun PlanningBottomBar(
-    created: Boolean,
     onRowTopClicked: () -> Unit,
     onRowBottomClicked: () -> Unit,
     onColumnRightClicked: () -> Unit,
     onColumnLeftClicked: () -> Unit,
-    onCreateClicked: () -> Unit,
     navigateToMapping: () -> Unit
 ) {
     BottomAppBar(
         actions = {
-            if (created) {
-                IconButton(
-                    onClick = onRowTopClicked
-                ) {
-                    Icon(
-                        painterResource(
-                            id = R.drawable.twotone_keyboard_double_arrow_up_24
-                        ),
-                        contentDescription = stringResource(
-                            id = R.string.add_row_top
-                        )
+            IconButton(
+                onClick = onRowTopClicked
+            ) {
+                Icon(
+                    painterResource(
+                        id = R.drawable.twotone_keyboard_double_arrow_up_24
+                    ),
+                    contentDescription = stringResource(
+                        id = R.string.add_row_top
                     )
-                }
-                IconButton(
-                    onClick = onColumnRightClicked
-                ) {
-                    Icon(
-                        painterResource(
-                            id = R.drawable.twotone_keyboard_double_arrow_right_24
-                        ),
-                        contentDescription = stringResource(
-                            id = R.string.add_column_right
-                        )
+                )
+            }
+            IconButton(
+                onClick = onColumnRightClicked
+            ) {
+                Icon(
+                    painterResource(
+                        id = R.drawable.twotone_keyboard_double_arrow_right_24
+                    ),
+                    contentDescription = stringResource(
+                        id = R.string.add_column_right
                     )
-                }
-                IconButton(
-                    onClick = onRowBottomClicked
-                ) {
-                    Icon(
-                        painterResource(
-                            id = R.drawable.twotone_keyboard_double_arrow_down_24
-                        ),
-                        contentDescription = stringResource(
-                            id = R.string.add_row_bottom
-                        )
+                )
+            }
+            IconButton(
+                onClick = onRowBottomClicked
+            ) {
+                Icon(
+                    painterResource(
+                        id = R.drawable.twotone_keyboard_double_arrow_down_24
+                    ),
+                    contentDescription = stringResource(
+                        id = R.string.add_row_bottom
                     )
-                }
-                IconButton(
-                    onClick = onColumnLeftClicked
-                ) {
-                    Icon(
-                        painterResource(
-                            id = R.drawable.sharp_keyboard_double_arrow_left_24
-                        ),
-                        contentDescription = stringResource(
-                            id = R.string.add_column_left
-                        )
+                )
+            }
+            IconButton(
+                onClick = onColumnLeftClicked
+            ) {
+                Icon(
+                    painterResource(
+                        id = R.drawable.sharp_keyboard_double_arrow_left_24
+                    ),
+                    contentDescription = stringResource(
+                        id = R.string.add_column_left
                     )
-                }
+                )
             }
         },
         floatingActionButton = {
-            if (!created) {
-                FloatingActionButton(
-                    onClick = {
-                        onCreateClicked()
-                    },
-                    containerColor = BottomAppBarDefaults
-                        .bottomAppBarFabColor,
-                    elevation = FloatingActionButtonDefaults
-                        .bottomAppBarFabElevation()
-                ) {
-                    Icon(
-                        Icons.TwoTone.Create,
-                        contentDescription = stringResource(
-                            id = R.string.create_plan
-                        )
+            FloatingActionButton(
+                onClick = navigateToMapping,
+                containerColor = BottomAppBarDefaults
+                    .bottomAppBarFabColor,
+                elevation = FloatingActionButtonDefaults
+                    .bottomAppBarFabElevation()
+            ) {
+                Icon(
+                    Icons.TwoTone.Done,
+                    contentDescription = stringResource(
+                        id = R.string.done
                     )
-                }
-            } else {
-                FloatingActionButton(
-                    onClick = navigateToMapping,
-                    containerColor = BottomAppBarDefaults
-                        .bottomAppBarFabColor,
-                    elevation = FloatingActionButtonDefaults
-                        .bottomAppBarFabElevation()
-                ) {
-                    Icon(
-                        Icons.TwoTone.Done,
-                        contentDescription = stringResource(
-                            id = R.string.done
-                        )
-                    )
-                }
+                )
             }
         }
     )
