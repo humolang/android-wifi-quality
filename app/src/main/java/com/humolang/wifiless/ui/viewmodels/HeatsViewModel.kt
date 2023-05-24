@@ -7,8 +7,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.humolang.wifiless.WiFilessApplication
+import com.humolang.wifiless.data.datasources.db.entities.Block
+import com.humolang.wifiless.data.datasources.db.entities.Column
 import com.humolang.wifiless.data.datasources.db.entities.Heat
 import com.humolang.wifiless.data.repositories.HeatsRepository
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,6 +43,14 @@ class HeatsViewModel(
         viewModelScope.launch {
             heatsRepository.deleteHeat(heat)
         }
+    }
+
+    fun loadBlocks(
+        heatId: Long
+    ): Flow<Map<Column, List<Block>>> {
+
+        return heatsRepository
+            .loadBlocks(heatId)
     }
 
     companion object {

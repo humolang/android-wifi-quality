@@ -21,12 +21,15 @@ interface HeatDao {
     @Delete
     suspend fun delete(vararg heats: Heat): Int
 
-    @Query("select * from heats where heat_id = :id")
+    @Query("select * from heats " +
+            "where heat_id = :id")
     suspend fun loadHeatById(id: Long): Heat
 
-    @Query("select * from heats where heat_id = :id")
+    @Query("select * from heats " +
+            "where heat_id = :id")
     fun loadObservableHeat(id: Long): Flow<Heat>
 
-    @Query("select * from heats order by modification_timestamp")
+    @Query("select * from heats " +
+            "order by modification_timestamp desc")
     fun loadHeats(): Flow<List<Heat>>
 }

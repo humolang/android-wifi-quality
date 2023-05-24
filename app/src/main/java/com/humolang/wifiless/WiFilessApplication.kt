@@ -73,7 +73,8 @@ class WiFilessApplication : Application() {
         )
 
         heatsRepository = HeatsRepository(
-            heatDao = database.heatDao()
+            heatDao = database.heatDao(),
+            columnDao = database.columnDao()
         )
     }
 }
