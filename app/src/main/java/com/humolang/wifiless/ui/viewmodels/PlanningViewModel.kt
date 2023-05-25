@@ -64,45 +64,39 @@ class PlanningViewModel(
         }
     }
 
-    fun updateBlockType(
-        block: Block,
-        type: BlockType
-    ) {
+    fun updateBlockType(block: Block, type: BlockType) {
         viewModelScope.launch {
             planningTool.updateBlockType(block, type)
         }
     }
 
-    fun updateHeatName(
-        heat: Heat,
-        name: String
-    ) {
+    fun updateHeatName(heat: Heat, name: String) {
         viewModelScope.launch {
             planningTool.updateHeatName(heat, name)
         }
     }
 
-    fun insertTopRow(heatId: Long) {
+    fun insertRow(heatId: Long, y: Int) {
         viewModelScope.launch {
-            planningTool.insertTopRow(heatId)
+            planningTool.insertRow(heatId, y)
         }
     }
 
-    fun insertBottomRow(heatId: Long) {
+    fun insertColumn(heatId: Long, x: Int) {
         viewModelScope.launch {
-            planningTool.insertBottomRow(heatId)
+            planningTool.insertColumn(heatId, x)
         }
     }
 
-    fun insertRightColumn(heatId: Long) {
+    fun deleteRow(heatId: Long, x: Int) {
         viewModelScope.launch {
-            planningTool.insertRightColumn(heatId)
+            planningTool.deleteRow(heatId, x)
         }
     }
 
-    fun insertLeftColumn(heatId: Long) {
+    fun deleteColumn(heatId: Long, y: Int) {
         viewModelScope.launch {
-            planningTool.insertLeftColumn(heatId)
+            planningTool.deleteColumn(heatId, y)
         }
     }
 

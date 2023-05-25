@@ -1,8 +1,9 @@
 package com.humolang.wifiless.ui.screens
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.ArrowBack
+import androidx.compose.material.icons.twotone.Delete
 import androidx.compose.material.icons.twotone.Done
 import androidx.compose.material.icons.twotone.Edit
 import androidx.compose.material3.BottomAppBar
@@ -109,19 +111,19 @@ fun PlanningScreen(
             PlanningBottomBar(
                 onRowTopClicked = {
                     planningViewModel
-                        .insertTopRow(heat.id)
+                        .insertRow(heat.id, 0)
                 },
                 onRowBottomClicked = {
                     planningViewModel
-                        .insertBottomRow(heat.id)
+                        .insertRow(heat.id, heat.rows)
                 },
                 onColumnRightClicked = {
                     planningViewModel
-                        .insertRightColumn(heat.id)
+                        .insertColumn(heat.id, heat.columns)
                 },
                 onColumnLeftClicked = {
                     planningViewModel
-                        .insertLeftColumn(heat.id)
+                        .insertColumn(heat.id, 0)
                 },
                 navigateToMapping = {
                     navigateToMapping(heat.id)
@@ -275,7 +277,7 @@ private fun PlanningBottomBar(
                         id = R.drawable.twotone_keyboard_double_arrow_up_24
                     ),
                     contentDescription = stringResource(
-                        id = R.string.add_row_top
+                        id = R.string.insert_row_top
                     )
                 )
             }
@@ -287,7 +289,7 @@ private fun PlanningBottomBar(
                         id = R.drawable.twotone_keyboard_double_arrow_right_24
                     ),
                     contentDescription = stringResource(
-                        id = R.string.add_column_right
+                        id = R.string.insert_column_right
                     )
                 )
             }
@@ -299,7 +301,7 @@ private fun PlanningBottomBar(
                         id = R.drawable.twotone_keyboard_double_arrow_down_24
                     ),
                     contentDescription = stringResource(
-                        id = R.string.add_row_bottom
+                        id = R.string.insert_row_bottom
                     )
                 )
             }
@@ -308,10 +310,10 @@ private fun PlanningBottomBar(
             ) {
                 Icon(
                     painterResource(
-                        id = R.drawable.sharp_keyboard_double_arrow_left_24
+                        id = R.drawable.twotone_keyboard_double_arrow_left_24
                     ),
                     contentDescription = stringResource(
-                        id = R.string.add_column_left
+                        id = R.string.insert_column_left
                     )
                 )
             }
@@ -348,6 +350,22 @@ private fun PlanningContent(
                 planningViewModel
                     .updateBlockType(block, type)
             },
+            onInsertRowClicked = { heatId, y ->
+                planningViewModel
+                    .insertRow(heatId, y)
+            },
+            onInsertColumnClicked = { heatId, x ->
+                planningViewModel
+                    .insertColumn(heatId, x)
+            },
+            onDeleteRowClicked = { heatId, y ->
+                planningViewModel
+                    .deleteRow(heatId, y)
+            },
+            onDeleteColumnClicked = { heatId, x ->
+                planningViewModel
+                    .deleteColumn(heatId, x)
+            },
             modifier = Modifier.fillMaxSize()
         )
     }
@@ -358,6 +376,10 @@ private fun PlanningField(
     heatFlow: StateFlow<Heat>,
     blocksFlow: StateFlow<Map<Column, List<Block>>>,
     onBlockTypeClicked: (Block, BlockType) -> Unit,
+    onInsertRowClicked: (Long, Int) -> Unit,
+    onInsertColumnClicked: (Long, Int) -> Unit,
+    onDeleteRowClicked: (Long, Int) -> Unit,
+    onDeleteColumnClicked: (Long, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -369,6 +391,10 @@ private fun PlanningField(
             heatFlow = heatFlow,
             blocksFlow = blocksFlow,
             onBlockTypeClicked = onBlockTypeClicked,
+            onInsertRowClicked = onInsertRowClicked,
+            onInsertColumnClicked = onInsertColumnClicked,
+            onDeleteRowClicked = onDeleteRowClicked,
+            onDeleteColumnClicked = onDeleteColumnClicked,
             modifier = Modifier.padding(16.dp)
         )
     }
@@ -379,6 +405,10 @@ private fun RoomPlan(
     heatFlow: StateFlow<Heat>,
     blocksFlow: StateFlow<Map<Column, List<Block>>>,
     onBlockTypeClicked: (Block, BlockType) -> Unit,
+    onInsertRowClicked: (Long, Int) -> Unit,
+    onInsertColumnClicked: (Long, Int) -> Unit,
+    onDeleteRowClicked: (Long, Int) -> Unit,
+    onDeleteColumnClicked: (Long, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var scale by remember { mutableStateOf(1f) }
@@ -415,8 +445,14 @@ private fun RoomPlan(
                 for (block in column.value) {
 
                     Block(
+                        heat = heat,
+                        column = column.key,
                         block = block,
                         onBlockTypeClicked = onBlockTypeClicked,
+                        onInsertRowClicked = onInsertRowClicked,
+                        onInsertColumnClicked = onInsertColumnClicked,
+                        onDeleteRowClicked = onDeleteRowClicked,
+                        onDeleteColumnClicked = onDeleteColumnClicked,
                         modifier = Modifier
                             .fillMaxSize()
                             .weight(1f)
@@ -428,10 +464,17 @@ private fun RoomPlan(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Block(
+    heat: Heat,
+    column: Column,
     block: Block,
     onBlockTypeClicked: (Block, BlockType) -> Unit,
+    onInsertRowClicked: (Long, Int) -> Unit,
+    onInsertColumnClicked: (Long, Int) -> Unit,
+    onDeleteRowClicked: (Long, Int) -> Unit,
+    onDeleteColumnClicked: (Long, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val tertiaryBorder = MaterialTheme.colorScheme.onTertiaryContainer
@@ -456,7 +499,11 @@ private fun Block(
         tertiaryRectangle.colorSpace
     )
 
-    var expanded by remember {
+    var typeMenuExpanded by remember {
+        mutableStateOf(false)
+    }
+
+    var editMenuExpanded by remember {
         mutableStateOf(false)
     }
 
@@ -477,7 +524,14 @@ private fun Block(
                     )
                 },
                 modifier = modifier
-                    .clickable { expanded = true }
+                    .combinedClickable(
+                        onClick = {
+                            typeMenuExpanded = true
+                        },
+                        onLongClick = {
+                            editMenuExpanded = true
+                        }
+                    )
             )
         }
 
@@ -494,7 +548,14 @@ private fun Block(
                     )
                 },
                 modifier = modifier
-                    .clickable { expanded = true }
+                    .combinedClickable(
+                        onClick = {
+                            typeMenuExpanded = true
+                        },
+                        onLongClick = {
+                            editMenuExpanded = true
+                        }
+                    )
             )
         }
 
@@ -518,16 +579,35 @@ private fun Block(
                             )
                         )
                     }
-                    .clickable { expanded = true }
+                    .combinedClickable(
+                        onClick = {
+                            typeMenuExpanded = true
+                        },
+                        onLongClick = {
+                            editMenuExpanded = true
+                        }
+                    )
             )
         }
     }
 
     BlockTypeMenu(
-        expanded = expanded,
-        onDismissRequest = { expanded = false },
+        expanded = typeMenuExpanded,
+        onDismissRequest = { typeMenuExpanded = false },
         block = block,
         onBlockTypeClicked = onBlockTypeClicked
+    )
+
+    EditPlanMenu(
+        expanded = editMenuExpanded,
+        onDismissRequest = { editMenuExpanded = false },
+        heat = heat,
+        column = column,
+        block = block,
+        onInsertRowClicked = onInsertRowClicked,
+        onInsertColumnClicked = onInsertColumnClicked,
+        onDeleteRowClicked = onDeleteRowClicked,
+        onDeleteColumnClicked = onDeleteColumnClicked
     )
 }
 
@@ -881,6 +961,154 @@ private fun BlockTypeMenu(
                     BlockType.FREE
                 )
                 onDismissRequest()
+            }
+        )
+    }
+}
+
+@Composable
+private fun EditPlanMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    heat: Heat,
+    column: Column,
+    block: Block,
+    onInsertRowClicked: (Long, Int) -> Unit,
+    onInsertColumnClicked: (Long, Int) -> Unit,
+    onDeleteRowClicked: (Long, Int) -> Unit,
+    onDeleteColumnClicked: (Long, Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        modifier = modifier
+    ) {
+        DropdownMenuItem(
+            text = {
+                Text(
+                    text = stringResource(
+                        id = R.string.insert_row_top
+                    )
+                )
+            },
+            onClick = {
+                onInsertRowClicked(heat.id, block.y)
+                onDismissRequest()
+            },
+            leadingIcon = {
+                Icon(
+                    painterResource(
+                        id = R.drawable
+                            .twotone_keyboard_double_arrow_up_24
+                    ),
+                    contentDescription = null
+                )
+            }
+        )
+        DropdownMenuItem(
+            text = {
+                Text(
+                    text = stringResource(
+                        id = R.string.insert_column_right
+                    )
+                )
+            },
+            onClick = {
+                onInsertColumnClicked(heat.id, column.x + 1)
+                onDismissRequest()
+            },
+            leadingIcon = {
+                Icon(
+                    painterResource(
+                        id = R.drawable
+                            .twotone_keyboard_double_arrow_right_24
+                    ),
+                    contentDescription = null
+                )
+            }
+        )
+        DropdownMenuItem(
+            text = {
+                Text(
+                    text = stringResource(
+                        id = R.string.insert_row_bottom
+                    )
+                )
+            },
+            onClick = {
+                onInsertRowClicked(heat.id, block.y + 1)
+                onDismissRequest()
+            },
+            leadingIcon = {
+                Icon(
+                    painterResource(
+                        id = R.drawable
+                            .twotone_keyboard_double_arrow_down_24
+                    ),
+                    contentDescription = null
+                )
+            }
+        )
+        DropdownMenuItem(
+            text = {
+                Text(
+                    text = stringResource(
+                        id = R.string.insert_column_left
+                    )
+                )
+            },
+            onClick = {
+                onInsertColumnClicked(heat.id, column.x)
+                onDismissRequest()
+            },
+            leadingIcon = {
+                Icon(
+                    painterResource(
+                        id = R.drawable
+                            .twotone_keyboard_double_arrow_left_24
+                    ),
+                    contentDescription = null
+                )
+            }
+        )
+
+        DropdownMenuItem(
+            text = {
+                Text(
+                    text = stringResource(
+                        id = R.string.delete_row
+                    )
+                )
+            },
+            onClick = {
+                onDeleteRowClicked(heat.id, block.y)
+                onDismissRequest()
+            },
+            leadingIcon = {
+                Icon(
+                    Icons.TwoTone.Delete,
+                    contentDescription = null
+                )
+            }
+        )
+        DropdownMenuItem(
+            text = {
+                Text(
+                    text = stringResource(
+                        id = R.string.delete_column
+                    )
+                )
+            },
+            onClick = {
+                onDeleteColumnClicked(heat.id, column.x)
+                onDismissRequest()
+            },
+            leadingIcon = {
+                Icon(
+                    Icons.TwoTone.Delete,
+                    contentDescription = null
+                )
             }
         )
     }
