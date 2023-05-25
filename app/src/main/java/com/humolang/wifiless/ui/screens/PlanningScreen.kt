@@ -1,5 +1,7 @@
 package com.humolang.wifiless.ui.screens
 
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
@@ -20,6 +22,7 @@ import androidx.compose.material.icons.twotone.Done
 import androidx.compose.material.icons.twotone.Edit
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,6 +56,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -725,244 +729,78 @@ private fun BlockTypeMenu(
     onBlockTypeClicked: (Block, BlockType) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val onItemClicked = { type: BlockType ->
+        onBlockTypeClicked(block, type)
+        onDismissRequest()
+    }
+
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
         modifier = modifier
     ) {
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.armchair
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.ARMCHAIR
-                )
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable.twotone_chair_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.armchair,
+            drawableId = R.drawable.twotone_chair_24
+        ) {
+            onItemClicked(BlockType.ARMCHAIR)
+        }
 
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.chair
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.CHAIR
-                )
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable.twotone_chair_alt_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.chair,
+            drawableId = R.drawable.twotone_chair_alt_24
+        ) {
+            onItemClicked(BlockType.CHAIR)
+        }
 
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.computer
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.COMPUTER
-                )
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable.twotone_computer_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.computer,
+            drawableId = R.drawable.twotone_computer_24
+        ) {
+            onItemClicked(BlockType.COMPUTER)
+        }
 
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.door
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.DOOR
-                )
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable.twotone_door_front_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.router,
+            drawableId = R.drawable.twotone_router_24
+        ) {
+            onItemClicked(BlockType.ROUTER)
+        }
 
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.router
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.ROUTER
-                )
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable.twotone_router_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.table,
+            drawableId = R.drawable.twotone_table_restaurant_24
+        ) {
+            onItemClicked(BlockType.TABLE)
+        }
 
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.table
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.TABLE
-                )
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable.twotone_table_restaurant_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.tv,
+            drawableId = R.drawable.twotone_tv_24
+        ) {
+            onItemClicked(BlockType.TV)
+        }
 
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.tv
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.TV
-                )
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable.twotone_tv_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.window,
+            drawableId = R.drawable.twotone_window_24
+        ) {
+            onItemClicked(BlockType.WINDOW)
+        }
 
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.window
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.WINDOW
-                )
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable.twotone_window_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.wall,
+            drawableId = R.drawable.twotone_fence_24
+        ) {
+            onItemClicked(BlockType.WALL)
+        }
 
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.wall
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.WALL
-                )
-                onDismissRequest()
-            }
-        )
-
-        DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.free
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.FREE
-                )
-                onDismissRequest()
-            }
-        )
+            stringId = R.string.free,
+            drawableId = R.drawable.twotone_air_24
+        ) {
+            onItemClicked(BlockType.FREE)
+        }
     }
 }
 
@@ -985,131 +823,103 @@ private fun EditPlanMenu(
         modifier = modifier
     ) {
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.insert_row_top
-                    )
-                )
-            },
-            onClick = {
-                onInsertRowClicked(heat.id, block.y)
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable
-                            .twotone_keyboard_double_arrow_up_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.insert_row_top,
+            drawableId = R.drawable
+                .twotone_keyboard_double_arrow_up_24
+        ) {
+            onInsertRowClicked(heat.id, block.y)
+            onDismissRequest()
+        }
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.insert_column_right
-                    )
-                )
-            },
-            onClick = {
-                onInsertColumnClicked(heat.id, column.x + 1)
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable
-                            .twotone_keyboard_double_arrow_right_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.insert_column_right,
+            drawableId = R.drawable
+                .twotone_keyboard_double_arrow_right_24
+        ) {
+            onInsertColumnClicked(heat.id, column.x + 1)
+            onDismissRequest()
+        }
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.insert_row_bottom
-                    )
-                )
-            },
-            onClick = {
-                onInsertRowClicked(heat.id, block.y + 1)
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable
-                            .twotone_keyboard_double_arrow_down_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.insert_row_bottom,
+            drawableId = R.drawable
+                .twotone_keyboard_double_arrow_down_24
+        ) {
+            onInsertRowClicked(heat.id, block.y + 1)
+            onDismissRequest()
+        }
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.insert_column_left
-                    )
-                )
-            },
-            onClick = {
-                onInsertColumnClicked(heat.id, column.x)
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable
-                            .twotone_keyboard_double_arrow_left_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.insert_column_left,
+            drawableId = R.drawable
+                .twotone_keyboard_double_arrow_left_24
+        ) {
+            onInsertColumnClicked(heat.id, column.x)
+            onDismissRequest()
+        }
+
+        Divider()
 
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.delete_row
-                    )
-                )
-            },
-            onClick = {
-                onDeleteRowClicked(heat.id, block.y)
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    Icons.TwoTone.Delete,
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.delete_row,
+            imageVector = Icons.TwoTone.Delete
+        ) {
+            onDeleteRowClicked(heat.id, block.y)
+            onDismissRequest()
+        }
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.delete_column
-                    )
-                )
-            },
-            onClick = {
-                onDeleteColumnClicked(heat.id, column.x)
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    Icons.TwoTone.Delete,
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.delete_column,
+            imageVector = Icons.TwoTone.Delete
+        ) {
+            onDeleteColumnClicked(heat.id, column.x)
+            onDismissRequest()
+        }
     }
+}
+
+@Composable
+private fun DropdownMenuItem(
+    @StringRes stringId: Int,
+    @DrawableRes drawableId: Int,
+    onClick: () -> Unit
+) {
+    DropdownMenuItem(
+        text = {
+            Text(
+                text = stringResource(
+                    id = stringId
+                )
+            )
+        },
+        onClick = onClick,
+        leadingIcon = {
+            Icon(
+                painter = painterResource(
+                    id = drawableId
+                ),
+                contentDescription = null
+            )
+        }
+    )
+}
+
+@Composable
+private fun DropdownMenuItem(
+    @StringRes stringId: Int,
+    imageVector: ImageVector,
+    onClick: () -> Unit
+) {
+    DropdownMenuItem(
+        text = {
+            Text(
+                text = stringResource(
+                    id = stringId
+                )
+            )
+        },
+        onClick = onClick,
+        leadingIcon = {
+            Icon(
+                imageVector = imageVector,
+                contentDescription = null
+            )
+        }
+    )
 }
