@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -49,9 +50,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -181,6 +179,7 @@ private fun MappingContent(
                 .height(64.dp)
                 .padding(16.dp)
         )
+
         MappingField(
             heatFlow = mappingViewModel.heat,
             blocksFlow = mappingViewModel.blocks,
@@ -193,77 +192,93 @@ private fun MappingContent(
     }
 }
 
-@OptIn(ExperimentalTextApi::class)
 @Composable
 private fun RssiHorizontalScale(
     minRssi: Int,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier) {
-        val minColor = MaterialTheme.colorScheme
+        val startColor = MaterialTheme.colorScheme
             .tertiaryContainer.copy(
-                //alpha = 1f,
                 red = 0f,
-                green = 0f,
-                //blue = 0f
+                green = 0f
             )
-        val maxColor = MaterialTheme.colorScheme
+        val endColor = MaterialTheme.colorScheme
             .tertiaryContainer.copy(
-                //alpha = 1f,
                 red = 1f,
-                green = 1f,
-                //blue = 1f
+                green = 1f
             )
 
-        val horizontalGradient = Brush
-            .horizontalGradient(
-                colors = listOf(minColor, maxColor)
-            )
-
-        val textMeasurer = rememberTextMeasurer()
-        val textStyle = MaterialTheme.typography
-            .labelSmall
-
-        val minText = stringResource(
+        val startLabel = stringResource(
             id = R.string.rssi_dbm,
             minRssi
         )
-        val maxText = stringResource(
+        val endLabel = stringResource(
             id = R.string.rssi_dbm,
             0
         )
 
-        val maxTextWidthPx = textMeasurer
-            .measure(maxText).size.width
+        HorizontalColorScale(
+            startLabel = startLabel,
+            endLabel = endLabel,
+            startColor = startColor,
+            endColor = endColor,
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+@Composable
+private fun HorizontalColorScale(
+    startLabel: String,
+    endLabel: String,
+    startColor: Color,
+    endColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        val horizontalGradient = Brush
+            .horizontalGradient(
+                colors = listOf(
+                    startColor,
+                    endColor
+                )
+            )
 
         Canvas(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
         ) {
-            val scaleHeightPx = size.height / 2
-
             drawLine(
                 brush = horizontalGradient,
-                start = Offset(0f, 0f),
-                end = Offset(size.width, 0f),
-                strokeWidth = scaleHeightPx
-            )
-
-            drawText(
-                textMeasurer = textMeasurer,
-                text = minText,
-                topLeft = Offset(
+                start = Offset(
                     0f,
-                    0f + scaleHeightPx
+                    size.height / 2
                 ),
+                end = Offset(
+                    size.width,
+                    size.height / 2
+                ),
+                strokeWidth = size.height
+            )
+        }
+
+        val textStyle = MaterialTheme.typography
+            .labelSmall
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            Text(
+                text = startLabel,
                 style = textStyle
             )
-            drawText(
-                textMeasurer = textMeasurer,
-                text = maxText,
-                topLeft = Offset(
-                    size.width - maxTextWidthPx,
-                    0f + scaleHeightPx
-                ),
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = endLabel,
                 style = textStyle
             )
         }
@@ -351,26 +366,22 @@ private fun Block(
     onBlockClicked: (Block) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val tertiaryBorder = MaterialTheme.colorScheme.onTertiaryContainer
-    val tertiaryRectangle = MaterialTheme.colorScheme.tertiaryContainer
-
     val hasRssi = abs(block.rssi) in 0..100
-    val rssiGreen = abs(block.rssi.toFloat()) / 100
+    val rssiColor = abs(block.rssi.toFloat()) / 100
 
-    val borderColor = Color(
-        tertiaryBorder.red,
-        if (hasRssi) rssiGreen else tertiaryBorder.green,
-        tertiaryBorder.blue,
-        tertiaryBorder.alpha,
-        tertiaryBorder.colorSpace
-    )
+    val borderColor = MaterialTheme.colorScheme
+        .onTertiaryContainer
 
-    val rectangleColor = Color(
-        tertiaryRectangle.red,
-        if (hasRssi) rssiGreen else tertiaryRectangle.green,
-        tertiaryRectangle.blue,
-        tertiaryRectangle.alpha,
-        tertiaryRectangle.colorSpace
+    val tertiaryRectangle = MaterialTheme.colorScheme
+        .tertiaryContainer
+    val rectangleColor = tertiaryRectangle.copy(
+        red = if (hasRssi)
+            rssiColor
+        else tertiaryRectangle.red,
+
+        green = if (hasRssi)
+            rssiColor
+        else tertiaryRectangle.green,
     )
 
     when (block.type) {
@@ -454,7 +465,7 @@ private fun BlockDrawer(
             .border(
                 2.dp,
                 borderColor,
-                RoundedCornerShape(4.dp)
+                RoundedCornerShape(6.dp)
             )
             .padding(2.dp)
     ) {
