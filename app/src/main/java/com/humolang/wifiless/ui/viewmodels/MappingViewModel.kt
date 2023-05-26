@@ -31,6 +31,9 @@ class MappingViewModel(
     val blocks: StateFlow<Map<Column, List<Block>>>
         get() = _blocks.asStateFlow()
 
+    val minRssi: Int
+        get() = mappingTool.minRssi
+
     private suspend fun collectHeat() {
         mappingTool.heat.collect { heat ->
             _heat.value = heat

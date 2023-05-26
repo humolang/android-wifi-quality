@@ -6,10 +6,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -38,6 +41,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -45,6 +49,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -167,14 +174,99 @@ private fun MappingContent(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
+        RssiHorizontalScale(
+            minRssi = mappingViewModel.minRssi,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+                .padding(16.dp)
+        )
         MappingField(
             heatFlow = mappingViewModel.heat,
             blocksFlow = mappingViewModel.blocks,
             onBlockClicked = { block ->
                 mappingViewModel.checkRssi(block)
             },
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
         )
+    }
+}
+
+@OptIn(ExperimentalTextApi::class)
+@Composable
+private fun RssiHorizontalScale(
+    minRssi: Int,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier) {
+        val minColor = MaterialTheme.colorScheme
+            .tertiaryContainer.copy(
+                //alpha = 1f,
+                red = 0f,
+                green = 0f,
+                //blue = 0f
+            )
+        val maxColor = MaterialTheme.colorScheme
+            .tertiaryContainer.copy(
+                //alpha = 1f,
+                red = 1f,
+                green = 1f,
+                //blue = 1f
+            )
+
+        val horizontalGradient = Brush
+            .horizontalGradient(
+                colors = listOf(minColor, maxColor)
+            )
+
+        val textMeasurer = rememberTextMeasurer()
+        val textStyle = MaterialTheme.typography
+            .labelSmall
+
+        val minText = stringResource(
+            id = R.string.rssi_dbm,
+            minRssi
+        )
+        val maxText = stringResource(
+            id = R.string.rssi_dbm,
+            0
+        )
+
+        val maxTextWidthPx = textMeasurer
+            .measure(maxText).size.width
+
+        Canvas(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            val scaleHeightPx = size.height / 2
+
+            drawLine(
+                brush = horizontalGradient,
+                start = Offset(0f, 0f),
+                end = Offset(size.width, 0f),
+                strokeWidth = scaleHeightPx
+            )
+
+            drawText(
+                textMeasurer = textMeasurer,
+                text = minText,
+                topLeft = Offset(
+                    0f,
+                    0f + scaleHeightPx
+                ),
+                style = textStyle
+            )
+            drawText(
+                textMeasurer = textMeasurer,
+                text = maxText,
+                topLeft = Offset(
+                    size.width - maxTextWidthPx,
+                    0f + scaleHeightPx
+                ),
+                style = textStyle
+            )
+        }
     }
 }
 
