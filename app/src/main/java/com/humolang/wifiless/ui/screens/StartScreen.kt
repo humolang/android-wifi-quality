@@ -334,7 +334,7 @@ private fun LinkSpeedGraph(
                     verticalCapacity = graphState.maxLinkSpeed,
                     labelX = stringResource(id = R.string.label_x_time),
                     labelY = stringResource(
-                        id = R.string.label_y_speed,
+                        id = R.string.label_y_link_speed,
                         linkSpeedUnits
                     ),
                     valueAxisAsc = true,

@@ -272,7 +272,7 @@ private fun HeatItem(
                     Icon(
                         Icons.TwoTone.MoreVert,
                         contentDescription = stringResource(
-                            id = R.string.heatmap_options
+                            id = R.string.options
                         )
                     )
                 }

@@ -288,7 +288,7 @@ private fun PlanningBottomBar(
                             id = R.drawable.twotone_keyboard_double_arrow_up_24
                         ),
                         contentDescription = stringResource(
-                            id = R.string.add_row_top
+                            id = R.string.insert_row_top
                         )
                     )
                 }
@@ -300,7 +300,7 @@ private fun PlanningBottomBar(
                             id = R.drawable.twotone_keyboard_double_arrow_right_24
                         ),
                         contentDescription = stringResource(
-                            id = R.string.add_column_right
+                            id = R.string.insert_column_right
                         )
                     )
                 }
@@ -312,7 +312,7 @@ private fun PlanningBottomBar(
                             id = R.drawable.twotone_keyboard_double_arrow_down_24
                         ),
                         contentDescription = stringResource(
-                            id = R.string.add_row_bottom
+                            id = R.string.insert_row_bottom
                         )
                     )
                 }
@@ -324,7 +324,7 @@ private fun PlanningBottomBar(
                             id = R.drawable.sharp_keyboard_double_arrow_left_24
                         ),
                         contentDescription = stringResource(
-                            id = R.string.add_column_left
+                            id = R.string.insert_column_left
                         )
                     )
                 }
