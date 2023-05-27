@@ -19,6 +19,8 @@
     <string name="insert_row_bottom">Вставить строку снизу</string>
     <string name="insert_column_right">Вставить столбец справа</string>
     <string name="insert_column_left">Вставить столбец слева</string>
+    <string name="delete_row">Удалить строку</string>
+    <string name="delete_column">Удалить столбец</string>
     <string name="armchair">Кресло</string>
     <string name="chair">Стул</string>
     <string name="computer">Компьютер</string>

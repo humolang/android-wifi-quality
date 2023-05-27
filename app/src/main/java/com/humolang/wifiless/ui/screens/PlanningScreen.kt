@@ -146,7 +146,6 @@ fun PlanningScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PlanningTopBar(
-    created: Boolean,
     heatFlow: StateFlow<Heat>,
     onNameAcceptedClicked: (Heat, String) -> Unit,
     popBackStack: () -> Unit,

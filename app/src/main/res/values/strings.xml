@@ -20,6 +20,8 @@
     <string name="insert_row_bottom">Insert a row at the bottom</string>
     <string name="insert_column_right">Insert a column to the right</string>
     <string name="insert_column_left">Insert a column to the left</string>
+    <string name="delete_row">Delete row</string>
+    <string name="delete_column">Delete column</string>
 
     <string name="armchair">Armchair</string>
     <string name="chair">Chair</string>
