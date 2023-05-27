@@ -28,6 +28,9 @@ interface ColumnDao {
     @Delete
     suspend fun delete(vararg columns: Column): Int
 
+    @Delete
+    suspend fun delete(columns: List<Column>): Int
+
     @Query("select * from columns " +
             "join blocks on columns.column_id = blocks.column_id " +
             "where heat_id = :heatId " +
@@ -44,4 +47,8 @@ interface ColumnDao {
             "where heat_id = :heatId " +
             "order by x asc")
     suspend fun loadColumns(heatId: Long): List<Column>
+
+    @Query("select * from columns " +
+            "where heat_id = :heatId and x >= :x")
+    suspend fun loadRighterColumns(heatId: Long, x: Int): List<Column>
 }

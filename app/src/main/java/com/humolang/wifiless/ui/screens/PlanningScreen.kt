@@ -1,8 +1,11 @@
 package com.humolang.wifiless.ui.screens
 
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,11 +17,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.ArrowBack
-import androidx.compose.material.icons.twotone.Create
+import androidx.compose.material.icons.twotone.Delete
 import androidx.compose.material.icons.twotone.Done
 import androidx.compose.material.icons.twotone.Edit
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,6 +42,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +56,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -76,12 +82,16 @@ fun PlanningScreen(
     planningViewModel: PlanningViewModel =
         viewModel(factory = PlanningViewModel.Factory)
 ) {
+    var id by rememberSaveable {
+        mutableStateOf(heatId)
+    }
+
+    LaunchedEffect(key1 = heatId) {
+        id = planningViewModel.loadHeatmap(id)
+    }
+
     val scrollBehavior = TopAppBarDefaults
         .pinnedScrollBehavior()
-
-    var created by remember {
-        mutableStateOf(false)
-    }
     
     Scaffold(
         modifier = Modifier
@@ -90,7 +100,6 @@ fun PlanningScreen(
             ),
         topBar = {
             PlanningTopBar(
-                created = created,
                 heatFlow = planningViewModel.heat,
                 onNameAcceptedClicked = { heat, name ->
                     planningViewModel.updateHeatName(heat, name)
@@ -104,28 +113,21 @@ fun PlanningScreen(
                 .collectAsStateWithLifecycle()
 
             PlanningBottomBar(
-                created = created,
                 onRowTopClicked = {
                     planningViewModel
-                        .insertTopRow(heat.id)
+                        .insertRow(heat.id, 0)
                 },
                 onRowBottomClicked = {
                     planningViewModel
-                        .insertBottomRow(heat.id)
+                        .insertRow(heat.id, heat.rows)
                 },
                 onColumnRightClicked = {
                     planningViewModel
-                        .insertRightColumn(heat.id)
+                        .insertColumn(heat.id, heat.columns)
                 },
                 onColumnLeftClicked = {
                     planningViewModel
-                        .insertLeftColumn(heat.id)
-                },
-                onCreateClicked = {
-                    planningViewModel
-                        .loadHeatmap(heatId)
-
-                    created = !created
+                        .insertColumn(heat.id, 0)
                 },
                 navigateToMapping = {
                     navigateToMapping(heat.id)
@@ -170,10 +172,7 @@ private fun PlanningTopBar(
         title = {
             if (edited) {
                 Text(
-                    if (created)
-                        heat.name
-                    else stringResource(id = R.string.room_plan),
-
+                    text = heat.name,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -213,34 +212,32 @@ private fun PlanningTopBar(
             }
         },
         actions = {
-            if (created) {
-                if (edited) {
-                    IconButton(
-                        onClick = {
-                            edited = !edited
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.TwoTone.Edit,
-                            contentDescription = stringResource(
-                                id = R.string.edit_name
-                            )
-                        )
+            if (edited) {
+                IconButton(
+                    onClick = {
+                        edited = !edited
                     }
-                } else {
-                    IconButton(
-                        onClick = {
-                            edited = !edited
-                            onNameAcceptedClicked(heat, heatName)
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.TwoTone.Done,
-                            contentDescription = stringResource(
-                                id = R.string.accept_name
-                            )
+                ) {
+                    Icon(
+                        imageVector = Icons.TwoTone.Edit,
+                        contentDescription = stringResource(
+                            id = R.string.edit_name
                         )
+                    )
+                }
+            } else {
+                IconButton(
+                    onClick = {
+                        edited = !edited
+                        onNameAcceptedClicked(heat, heatName)
                     }
+                ) {
+                    Icon(
+                        imageVector = Icons.TwoTone.Done,
+                        contentDescription = stringResource(
+                            id = R.string.accept_name
+                        )
+                    )
                 }
             }
 
@@ -269,100 +266,77 @@ private fun PlanningTopBar(
 
 @Composable
 private fun PlanningBottomBar(
-    created: Boolean,
     onRowTopClicked: () -> Unit,
     onRowBottomClicked: () -> Unit,
     onColumnRightClicked: () -> Unit,
     onColumnLeftClicked: () -> Unit,
-    onCreateClicked: () -> Unit,
     navigateToMapping: () -> Unit
 ) {
     BottomAppBar(
         actions = {
-            if (created) {
-                IconButton(
-                    onClick = onRowTopClicked
-                ) {
-                    Icon(
-                        painterResource(
-                            id = R.drawable.twotone_keyboard_double_arrow_up_24
-                        ),
-                        contentDescription = stringResource(
-                            id = R.string.insert_row_top
-                        )
+            IconButton(
+                onClick = onRowTopClicked
+            ) {
+                Icon(
+                    painterResource(
+                        id = R.drawable.twotone_keyboard_double_arrow_up_24
+                    ),
+                    contentDescription = stringResource(
+                        id = R.string.insert_row_top
                     )
-                }
-                IconButton(
-                    onClick = onColumnRightClicked
-                ) {
-                    Icon(
-                        painterResource(
-                            id = R.drawable.twotone_keyboard_double_arrow_right_24
-                        ),
-                        contentDescription = stringResource(
-                            id = R.string.insert_column_right
-                        )
+                )
+            }
+            IconButton(
+                onClick = onColumnRightClicked
+            ) {
+                Icon(
+                    painterResource(
+                        id = R.drawable.twotone_keyboard_double_arrow_right_24
+                    ),
+                    contentDescription = stringResource(
+                        id = R.string.insert_column_right
                     )
-                }
-                IconButton(
-                    onClick = onRowBottomClicked
-                ) {
-                    Icon(
-                        painterResource(
-                            id = R.drawable.twotone_keyboard_double_arrow_down_24
-                        ),
-                        contentDescription = stringResource(
-                            id = R.string.insert_row_bottom
-                        )
+                )
+            }
+            IconButton(
+                onClick = onRowBottomClicked
+            ) {
+                Icon(
+                    painterResource(
+                        id = R.drawable.twotone_keyboard_double_arrow_down_24
+                    ),
+                    contentDescription = stringResource(
+                        id = R.string.insert_row_bottom
                     )
-                }
-                IconButton(
-                    onClick = onColumnLeftClicked
-                ) {
-                    Icon(
-                        painterResource(
-                            id = R.drawable.sharp_keyboard_double_arrow_left_24
-                        ),
-                        contentDescription = stringResource(
-                            id = R.string.insert_column_left
-                        )
+                )
+            }
+            IconButton(
+                onClick = onColumnLeftClicked
+            ) {
+                Icon(
+                    painterResource(
+                        id = R.drawable.twotone_keyboard_double_arrow_left_24
+                    ),
+                    contentDescription = stringResource(
+                        id = R.string.insert_column_left
                     )
-                }
+                )
             }
         },
         floatingActionButton = {
-            if (!created) {
-                FloatingActionButton(
-                    onClick = {
-                        onCreateClicked()
-                    },
-                    containerColor = BottomAppBarDefaults
-                        .bottomAppBarFabColor,
-                    elevation = FloatingActionButtonDefaults
-                        .bottomAppBarFabElevation()
-                ) {
-                    Icon(
-                        Icons.TwoTone.Create,
-                        contentDescription = stringResource(
-                            id = R.string.create_plan
-                        )
+            FloatingActionButton(
+                onClick = navigateToMapping,
+                containerColor = BottomAppBarDefaults
+                    .bottomAppBarFabColor,
+                elevation = FloatingActionButtonDefaults
+                    .bottomAppBarFabElevation()
+            ) {
+                Icon(
+                    Icons.TwoTone.Done,
+                    contentDescription = stringResource(
+                        id = R.string.done
                     )
-                }
-            } else {
-                FloatingActionButton(
-                    onClick = navigateToMapping,
-                    containerColor = BottomAppBarDefaults
-                        .bottomAppBarFabColor,
-                    elevation = FloatingActionButtonDefaults
-                        .bottomAppBarFabElevation()
-                ) {
-                    Icon(
-                        Icons.TwoTone.Done,
-                        contentDescription = stringResource(
-                            id = R.string.done
-                        )
-                    )
-                }
+                )
             }
         }
     )
@@ -381,6 +355,22 @@ private fun PlanningContent(
                 planningViewModel
                     .updateBlockType(block, type)
             },
+            onInsertRowClicked = { heatId, y ->
+                planningViewModel
+                    .insertRow(heatId, y)
+            },
+            onInsertColumnClicked = { heatId, x ->
+                planningViewModel
+                    .insertColumn(heatId, x)
+            },
+            onDeleteRowClicked = { heatId, y ->
+                planningViewModel
+                    .deleteRow(heatId, y)
+            },
+            onDeleteColumnClicked = { heatId, x ->
+                planningViewModel
+                    .deleteColumn(heatId, x)
+            },
             modifier = Modifier.fillMaxSize()
         )
     }
@@ -391,6 +381,10 @@ private fun PlanningField(
     heatFlow: StateFlow<Heat>,
     blocksFlow: StateFlow<Map<Column, List<Block>>>,
     onBlockTypeClicked: (Block, BlockType) -> Unit,
+    onInsertRowClicked: (Long, Int) -> Unit,
+    onInsertColumnClicked: (Long, Int) -> Unit,
+    onDeleteRowClicked: (Long, Int) -> Unit,
+    onDeleteColumnClicked: (Long, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -402,6 +396,10 @@ private fun PlanningField(
             heatFlow = heatFlow,
             blocksFlow = blocksFlow,
             onBlockTypeClicked = onBlockTypeClicked,
+            onInsertRowClicked = onInsertRowClicked,
+            onInsertColumnClicked = onInsertColumnClicked,
+            onDeleteRowClicked = onDeleteRowClicked,
+            onDeleteColumnClicked = onDeleteColumnClicked,
             modifier = Modifier.padding(16.dp)
         )
     }
@@ -412,6 +410,10 @@ private fun RoomPlan(
     heatFlow: StateFlow<Heat>,
     blocksFlow: StateFlow<Map<Column, List<Block>>>,
     onBlockTypeClicked: (Block, BlockType) -> Unit,
+    onInsertRowClicked: (Long, Int) -> Unit,
+    onInsertColumnClicked: (Long, Int) -> Unit,
+    onDeleteRowClicked: (Long, Int) -> Unit,
+    onDeleteColumnClicked: (Long, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var scale by remember { mutableStateOf(1f) }
@@ -448,8 +450,14 @@ private fun RoomPlan(
                 for (block in column.value) {
 
                     Block(
+                        heat = heat,
+                        column = column.key,
                         block = block,
                         onBlockTypeClicked = onBlockTypeClicked,
+                        onInsertRowClicked = onInsertRowClicked,
+                        onInsertColumnClicked = onInsertColumnClicked,
+                        onDeleteRowClicked = onDeleteRowClicked,
+                        onDeleteColumnClicked = onDeleteColumnClicked,
                         modifier = Modifier
                             .fillMaxSize()
                             .weight(1f)
@@ -461,10 +469,17 @@ private fun RoomPlan(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Block(
+    heat: Heat,
+    column: Column,
     block: Block,
     onBlockTypeClicked: (Block, BlockType) -> Unit,
+    onInsertRowClicked: (Long, Int) -> Unit,
+    onInsertColumnClicked: (Long, Int) -> Unit,
+    onDeleteRowClicked: (Long, Int) -> Unit,
+    onDeleteColumnClicked: (Long, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val tertiaryBorder = MaterialTheme.colorScheme.onTertiaryContainer
@@ -489,7 +504,11 @@ private fun Block(
         tertiaryRectangle.colorSpace
     )
 
-    var expanded by remember {
+    var typeMenuExpanded by remember {
+        mutableStateOf(false)
+    }
+
+    var editMenuExpanded by remember {
         mutableStateOf(false)
     }
 
@@ -510,7 +529,14 @@ private fun Block(
                     )
                 },
                 modifier = modifier
-                    .clickable { expanded = true }
+                    .combinedClickable(
+                        onClick = {
+                            typeMenuExpanded = true
+                        },
+                        onLongClick = {
+                            editMenuExpanded = true
+                        }
+                    )
             )
         }
 
@@ -527,7 +553,14 @@ private fun Block(
                     )
                 },
                 modifier = modifier
-                    .clickable { expanded = true }
+                    .combinedClickable(
+                        onClick = {
+                            typeMenuExpanded = true
+                        },
+                        onLongClick = {
+                            editMenuExpanded = true
+                        }
+                    )
             )
         }
 
@@ -551,16 +584,35 @@ private fun Block(
                             )
                         )
                     }
-                    .clickable { expanded = true }
+                    .combinedClickable(
+                        onClick = {
+                            typeMenuExpanded = true
+                        },
+                        onLongClick = {
+                            editMenuExpanded = true
+                        }
+                    )
             )
         }
     }
 
     BlockTypeMenu(
-        expanded = expanded,
-        onDismissRequest = { expanded = false },
+        expanded = typeMenuExpanded,
+        onDismissRequest = { typeMenuExpanded = false },
         block = block,
         onBlockTypeClicked = onBlockTypeClicked
+    )
+
+    EditPlanMenu(
+        expanded = editMenuExpanded,
+        onDismissRequest = { editMenuExpanded = false },
+        heat = heat,
+        column = column,
+        block = block,
+        onInsertRowClicked = onInsertRowClicked,
+        onInsertColumnClicked = onInsertColumnClicked,
+        onDeleteRowClicked = onDeleteRowClicked,
+        onDeleteColumnClicked = onDeleteColumnClicked
     )
 }
 
@@ -678,243 +730,197 @@ private fun BlockTypeMenu(
     onBlockTypeClicked: (Block, BlockType) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val onItemClicked = { type: BlockType ->
+        onBlockTypeClicked(block, type)
+        onDismissRequest()
+    }
+
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
         modifier = modifier
     ) {
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.armchair
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.ARMCHAIR
-                )
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable.twotone_chair_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.armchair,
+            drawableId = R.drawable.twotone_chair_24
+        ) {
+            onItemClicked(BlockType.ARMCHAIR)
+        }
 
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.chair
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.CHAIR
-                )
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable.twotone_chair_alt_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.chair,
+            drawableId = R.drawable.twotone_chair_alt_24
+        ) {
+            onItemClicked(BlockType.CHAIR)
+        }
 
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.computer
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.COMPUTER
-                )
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable.twotone_computer_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.computer,
+            drawableId = R.drawable.twotone_computer_24
+        ) {
+            onItemClicked(BlockType.COMPUTER)
+        }
 
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.door
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.DOOR
-                )
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable.twotone_door_front_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.router,
+            drawableId = R.drawable.twotone_router_24
+        ) {
+            onItemClicked(BlockType.ROUTER)
+        }
 
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.router
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.ROUTER
-                )
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable.twotone_router_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.table,
+            drawableId = R.drawable.twotone_table_restaurant_24
+        ) {
+            onItemClicked(BlockType.TABLE)
+        }
 
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.table
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.TABLE
-                )
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable.twotone_table_restaurant_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.tv,
+            drawableId = R.drawable.twotone_tv_24
+        ) {
+            onItemClicked(BlockType.TV)
+        }
 
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.tv
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.TV
-                )
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable.twotone_tv_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.window,
+            drawableId = R.drawable.twotone_window_24
+        ) {
+            onItemClicked(BlockType.WINDOW)
+        }
 
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.window
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.WINDOW
-                )
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(
-                        id = R.drawable.twotone_window_24
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
+            stringId = R.string.wall,
+            drawableId = R.drawable.twotone_fence_24
+        ) {
+            onItemClicked(BlockType.WALL)
+        }
 
         DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.wall
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.WALL
-                )
-                onDismissRequest()
-            }
-        )
-
-        DropdownMenuItem(
-            text = {
-                Text(
-                    text = stringResource(
-                        id = R.string.free
-                    )
-                )
-            },
-            onClick = {
-                onBlockTypeClicked(
-                    block,
-                    BlockType.FREE
-                )
-                onDismissRequest()
-            }
-        )
+            stringId = R.string.free,
+            drawableId = R.drawable.twotone_air_24
+        ) {
+            onItemClicked(BlockType.FREE)
+        }
     }
+}
+
+@Composable
+private fun EditPlanMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    heat: Heat,
+    column: Column,
+    block: Block,
+    onInsertRowClicked: (Long, Int) -> Unit,
+    onInsertColumnClicked: (Long, Int) -> Unit,
+    onDeleteRowClicked: (Long, Int) -> Unit,
+    onDeleteColumnClicked: (Long, Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        modifier = modifier
+    ) {
+        DropdownMenuItem(
+            stringId = R.string.insert_row_top,
+            drawableId = R.drawable
+                .twotone_keyboard_double_arrow_up_24
+        ) {
+            onInsertRowClicked(heat.id, block.y)
+            onDismissRequest()
+        }
+        DropdownMenuItem(
+            stringId = R.string.insert_column_right,
+            drawableId = R.drawable
+                .twotone_keyboard_double_arrow_right_24
+        ) {
+            onInsertColumnClicked(heat.id, column.x + 1)
+            onDismissRequest()
+        }
+        DropdownMenuItem(
+            stringId = R.string.insert_row_bottom,
+            drawableId = R.drawable
+                .twotone_keyboard_double_arrow_down_24
+        ) {
+            onInsertRowClicked(heat.id, block.y + 1)
+            onDismissRequest()
+        }
+        DropdownMenuItem(
+            stringId = R.string.insert_column_left,
+            drawableId = R.drawable
+                .twotone_keyboard_double_arrow_left_24
+        ) {
+            onInsertColumnClicked(heat.id, column.x)
+            onDismissRequest()
+        }
+
+        Divider()
+
+        DropdownMenuItem(
+            stringId = R.string.delete_row,
+            imageVector = Icons.TwoTone.Delete
+        ) {
+            onDeleteRowClicked(heat.id, block.y)
+            onDismissRequest()
+        }
+        DropdownMenuItem(
+            stringId = R.string.delete_column,
+            imageVector = Icons.TwoTone.Delete
+        ) {
+            onDeleteColumnClicked(heat.id, column.x)
+            onDismissRequest()
+        }
+    }
+}
+
+@Composable
+private fun DropdownMenuItem(
+    @StringRes stringId: Int,
+    @DrawableRes drawableId: Int,
+    onClick: () -> Unit
+) {
+    DropdownMenuItem(
+        text = {
+            Text(
+                text = stringResource(
+                    id = stringId
+                )
+            )
+        },
+        onClick = onClick,
+        leadingIcon = {
+            Icon(
+                painter = painterResource(
+                    id = drawableId
+                ),
+                contentDescription = null
+            )
+        }
+    )
+}
+
+@Composable
+private fun DropdownMenuItem(
+    @StringRes stringId: Int,
+    imageVector: ImageVector,
+    onClick: () -> Unit
+) {
+    DropdownMenuItem(
+        text = {
+            Text(
+                text = stringResource(
+                    id = stringId
+                )
+            )
+        },
+        onClick = onClick,
+        leadingIcon = {
+            Icon(
+                imageVector = imageVector,
+                contentDescription = null
+            )
+        }
+    )
 }
