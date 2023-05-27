@@ -2,19 +2,10 @@ package com.humolang.wifiless.ui.screens
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.border
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.rememberTransformableState
-import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.ArrowBack
 import androidx.compose.material.icons.twotone.Delete
@@ -46,16 +37,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
@@ -69,9 +52,9 @@ import com.humolang.wifiless.data.datasources.db.entities.Block
 import com.humolang.wifiless.data.datasources.db.entities.Column
 import com.humolang.wifiless.data.datasources.db.entities.Heat
 import com.humolang.wifiless.data.datasources.model.BlockType
+import com.humolang.wifiless.ui.screens.components.TransformableHeatmap
 import com.humolang.wifiless.ui.viewmodels.PlanningViewModel
 import kotlinx.coroutines.flow.StateFlow
-import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -391,332 +374,66 @@ private fun PlanningField(
         verticalArrangement = Arrangement.Center,
         modifier = modifier
     ) {
-        RoomPlan(
-            heatFlow = heatFlow,
-            blocksFlow = blocksFlow,
-            onBlockTypeClicked = onBlockTypeClicked,
+        val heat by heatFlow
+            .collectAsStateWithLifecycle()
+        val blocks by blocksFlow
+            .collectAsStateWithLifecycle()
+
+        var typeMenuExpanded by remember {
+            mutableStateOf(false)
+        }
+        var editMenuExpanded by remember {
+            mutableStateOf(false)
+        }
+
+        var selectedColumn by remember {
+            mutableStateOf(
+                Column(heatId = 0L, x = 0)
+            )
+        }
+
+        var selectedBlock by remember {
+            mutableStateOf(
+                Block(
+                    columnId = 0L,
+                    y = 0
+                )
+            )
+        }
+
+        TransformableHeatmap(
+            heat = heat,
+            blocks = blocks,
+            onBlockClicked = { block ->
+                selectedBlock = block
+                typeMenuExpanded = true
+            },
+            onBlockLongClicked = { column, block ->
+                selectedColumn = column
+                selectedBlock = block
+
+                editMenuExpanded = true
+            },
+            modifier = Modifier.padding(16.dp)
+        )
+
+        BlockTypeMenu(
+            expanded = typeMenuExpanded,
+            onDismissRequest = { typeMenuExpanded = false },
+            block = selectedBlock,
+            onBlockTypeClicked = onBlockTypeClicked
+        )
+
+        EditPlanMenu(
+            expanded = editMenuExpanded,
+            onDismissRequest = { editMenuExpanded = false },
+            heat = heat,
+            column = selectedColumn,
+            block = selectedBlock,
             onInsertRowClicked = onInsertRowClicked,
             onInsertColumnClicked = onInsertColumnClicked,
             onDeleteRowClicked = onDeleteRowClicked,
-            onDeleteColumnClicked = onDeleteColumnClicked,
-            modifier = Modifier.padding(16.dp)
-        )
-    }
-}
-
-@Composable
-private fun RoomPlan(
-    heatFlow: StateFlow<Heat>,
-    blocksFlow: StateFlow<Map<Column, List<Block>>>,
-    onBlockTypeClicked: (Block, BlockType) -> Unit,
-    onInsertRowClicked: (Long, Int) -> Unit,
-    onInsertColumnClicked: (Long, Int) -> Unit,
-    onDeleteRowClicked: (Long, Int) -> Unit,
-    onDeleteColumnClicked: (Long, Int) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var scale by remember { mutableStateOf(1f) }
-    var rotation by remember { mutableStateOf(0f) }
-    var offset by remember { mutableStateOf(Offset.Zero) }
-    val state = rememberTransformableState { zoomChange, offsetChange, rotationChange ->
-        scale *= zoomChange
-        rotation += rotationChange
-        offset += offsetChange
-    }
-
-    val heat by heatFlow
-        .collectAsStateWithLifecycle()
-    val blocks by blocksFlow
-        .collectAsStateWithLifecycle()
-
-    val ratioValue = heat.columns.toFloat() / heat.rows
-
-    Row(
-        modifier = modifier
-            .graphicsLayer(
-                scaleX = scale,
-                scaleY = scale,
-                rotationZ = rotation,
-                translationX = offset.x,
-                translationY = offset.y
-            )
-            .transformable(state = state)
-            .aspectRatio(ratioValue)
-    ) {
-        for (column in blocks) {
-
-            Column(modifier = Modifier.weight(1f)) {
-                for (block in column.value) {
-
-                    Block(
-                        heat = heat,
-                        column = column.key,
-                        block = block,
-                        onBlockTypeClicked = onBlockTypeClicked,
-                        onInsertRowClicked = onInsertRowClicked,
-                        onInsertColumnClicked = onInsertColumnClicked,
-                        onDeleteRowClicked = onDeleteRowClicked,
-                        onDeleteColumnClicked = onDeleteColumnClicked,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f)
-                            .padding(1.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun Block(
-    heat: Heat,
-    column: Column,
-    block: Block,
-    onBlockTypeClicked: (Block, BlockType) -> Unit,
-    onInsertRowClicked: (Long, Int) -> Unit,
-    onInsertColumnClicked: (Long, Int) -> Unit,
-    onDeleteRowClicked: (Long, Int) -> Unit,
-    onDeleteColumnClicked: (Long, Int) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val tertiaryBorder = MaterialTheme.colorScheme.onTertiaryContainer
-    val tertiaryRectangle = MaterialTheme.colorScheme.tertiaryContainer
-
-    val hasRssi = abs(block.rssi) in 0..100
-    val rssiGreen = abs(block.rssi.toFloat()) / 100
-
-    val borderColor = Color(
-        tertiaryBorder.red,
-        if (hasRssi) rssiGreen else tertiaryBorder.green,
-        tertiaryBorder.blue,
-        tertiaryBorder.alpha,
-        tertiaryBorder.colorSpace
-    )
-
-    val rectangleColor = Color(
-        tertiaryRectangle.red,
-        if (hasRssi) rssiGreen else tertiaryRectangle.green,
-        tertiaryRectangle.blue,
-        tertiaryRectangle.alpha,
-        tertiaryRectangle.colorSpace
-    )
-
-    var typeMenuExpanded by remember {
-        mutableStateOf(false)
-    }
-
-    var editMenuExpanded by remember {
-        mutableStateOf(false)
-    }
-
-    when (block.type) {
-
-        BlockType.WALL -> {
-            BlockDrawer(
-                borderColor = borderColor,
-                drawBlock = {
-                    drawWallBlock(
-                        rectangleColor = rectangleColor,
-                        lineColor = borderColor,
-                        cornerRadius = CornerRadius(
-                            4.dp.toPx(),
-                            4.dp.toPx()
-                        ),
-                        size = size
-                    )
-                },
-                modifier = modifier
-                    .combinedClickable(
-                        onClick = {
-                            typeMenuExpanded = true
-                        },
-                        onLongClick = {
-                            editMenuExpanded = true
-                        }
-                    )
-            )
-        }
-
-        BlockType.FREE -> {
-            BlockDrawer(
-                borderColor = borderColor,
-                drawBlock = {
-                    drawFreeBlock(
-                        rectangleColor = rectangleColor,
-                        cornerRadius = CornerRadius(
-                            4.dp.toPx(),
-                            4.dp.toPx()
-                        )
-                    )
-                },
-                modifier = modifier
-                    .combinedClickable(
-                        onClick = {
-                            typeMenuExpanded = true
-                        },
-                        onLongClick = {
-                            editMenuExpanded = true
-                        }
-                    )
-            )
-        }
-
-        else -> {
-            Icon(
-                painter = painterResource(id = block.imageId),
-                contentDescription = null,
-                modifier = modifier
-                    .border(
-                        2.dp,
-                        borderColor,
-                        RoundedCornerShape(4.dp)
-                    )
-                    .padding(2.dp)
-                    .drawBehind {
-                        drawFreeBlock(
-                            rectangleColor = rectangleColor,
-                            cornerRadius = CornerRadius(
-                                4.dp.toPx(),
-                                4.dp.toPx()
-                            )
-                        )
-                    }
-                    .combinedClickable(
-                        onClick = {
-                            typeMenuExpanded = true
-                        },
-                        onLongClick = {
-                            editMenuExpanded = true
-                        }
-                    )
-            )
-        }
-    }
-
-    BlockTypeMenu(
-        expanded = typeMenuExpanded,
-        onDismissRequest = { typeMenuExpanded = false },
-        block = block,
-        onBlockTypeClicked = onBlockTypeClicked
-    )
-
-    EditPlanMenu(
-        expanded = editMenuExpanded,
-        onDismissRequest = { editMenuExpanded = false },
-        heat = heat,
-        column = column,
-        block = block,
-        onInsertRowClicked = onInsertRowClicked,
-        onInsertColumnClicked = onInsertColumnClicked,
-        onDeleteRowClicked = onDeleteRowClicked,
-        onDeleteColumnClicked = onDeleteColumnClicked
-    )
-}
-
-@Composable
-private fun BlockDrawer(
-    borderColor: Color,
-    drawBlock: DrawScope.() -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Canvas(
-        modifier = modifier
-            .border(
-                2.dp,
-                borderColor,
-                RoundedCornerShape(4.dp)
-            )
-            .padding(2.dp)
-    ) {
-        drawBlock()
-    }
-}
-
-private fun DrawScope.drawFreeBlock(
-    rectangleColor: Color,
-    cornerRadius: CornerRadius
-) {
-    drawRoundRect(
-        color = rectangleColor,
-        cornerRadius = cornerRadius
-    )
-}
-
-private fun DrawScope.drawWallBlock(
-    rectangleColor: Color,
-    lineColor: Color,
-    cornerRadius: CornerRadius,
-    size: Size
-) {
-    drawRoundRect(
-        color = rectangleColor,
-        cornerRadius = cornerRadius
-    )
-
-    val lineWidth = 2.dp.toPx()
-
-    val times = 6
-
-    val intervalX = size.width / times
-    val intervalY = size.height / times
-
-    repeat(times) { number ->
-        drawLine(
-            color = lineColor,
-            start = Offset(
-                x = 0f,
-                y = size.height - (intervalY * number)
-            ),
-            end = Offset(
-                x = size.width - (intervalX * number),
-                y = 0f
-            ),
-            strokeWidth = lineWidth,
-            cap = StrokeCap.Round
-        )
-
-        drawLine(
-            color = lineColor,
-            start = Offset(
-                x = 0f + (intervalX * number),
-                y = size.height
-            ),
-            end = Offset(
-                x = size.width,
-                y = 0f + (intervalY * number)
-            ),
-            strokeWidth = lineWidth,
-            cap = StrokeCap.Round
-        )
-
-        drawLine(
-            color = lineColor,
-            start = Offset(
-                x = 0f + (intervalY * number),
-                y = 0f
-            ),
-            end = Offset(
-                x = size.width,
-                y = size.height - (intervalX * number)
-            ),
-            strokeWidth = lineWidth,
-            cap = StrokeCap.Round
-        )
-
-        drawLine(
-            color = lineColor,
-            start = Offset(
-                x = 0f,
-                y = 0f + (intervalY * number)
-            ),
-            end = Offset(
-                x = size.width - (intervalX * number),
-                y = size.height
-            ),
-            strokeWidth = lineWidth,
-            cap = StrokeCap.Round
+            onDeleteColumnClicked = onDeleteColumnClicked
         )
     }
 }
