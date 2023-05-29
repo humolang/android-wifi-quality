@@ -25,9 +25,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -71,23 +71,16 @@ fun PlanningScreen(
     LaunchedEffect(key1 = heatId) {
         id = planningViewModel.loadHeatmap(id)
     }
-
-    val scrollBehavior = TopAppBarDefaults
-        .pinnedScrollBehavior()
     
     Scaffold(
-        modifier = Modifier
-            .nestedScroll(
-                scrollBehavior.nestedScrollConnection
-            ),
+        modifier = Modifier,
         topBar = {
             PlanningTopBar(
                 heatFlow = planningViewModel.heat,
                 onNameAcceptedClicked = { heat, name ->
                     planningViewModel.updateHeatName(heat, name)
                 },
-                popBackStack = popBackStack,
-                scrollBehavior = scrollBehavior
+                popBackStack = popBackStack
             )
         },
         bottomBar = {
@@ -131,22 +124,25 @@ private fun PlanningTopBar(
     heatFlow: StateFlow<Heat>,
     onNameAcceptedClicked: (Heat, String) -> Unit,
     popBackStack: () -> Unit,
-    scrollBehavior: TopAppBarScrollBehavior,
     modifier: Modifier = Modifier
 ) {
     val heat by heatFlow
         .collectAsStateWithLifecycle()
 
-    var heatName by remember {
+    var heatName by rememberSaveable {
         mutableStateOf(heat.name)
     }
-    var edited by remember {
+    var edited by rememberSaveable {
         mutableStateOf(true)
     }
 
     val nameFieldRequester = remember {
         FocusRequester()
     }
+
+    val appBarContainerColor = MaterialTheme
+        .colorScheme
+        .surfaceColorAtElevation(3.dp)
 
     TopAppBar(
         modifier = modifier,
@@ -170,7 +166,13 @@ private fun PlanningTopBar(
                     },
                     singleLine = true,
                     modifier = Modifier
-                        .focusRequester(nameFieldRequester)
+                        .focusRequester(nameFieldRequester),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = appBarContainerColor,
+                        unfocusedContainerColor = appBarContainerColor,
+                        focusedIndicatorColor = appBarContainerColor,
+                        unfocusedIndicatorColor = appBarContainerColor
+                    )
                 )
 
                 LaunchedEffect(
@@ -221,27 +223,10 @@ private fun PlanningTopBar(
                     )
                 }
             }
-
-//            IconButton(
-//                onClick = { /* doSomething() */ }
-//            ) {
-//                Icon(
-//                    imageVector = Icons.TwoTone.Delete,
-//                    contentDescription = stringResource(
-//                        id = R.string.delete
-//                    )
-//                )
-//            }
         },
-        colors = if (edited)
-            TopAppBarDefaults.topAppBarColors()
-        else TopAppBarDefaults
-            .topAppBarColors(
-                containerColor = MaterialTheme.colorScheme
-                    .surfaceVariant
-            ),
-
-        scrollBehavior = scrollBehavior
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = appBarContainerColor
+        )
     )
 }
 
@@ -381,13 +366,13 @@ private fun PlanningField(
             mutableStateOf(false)
         }
 
-        var selectedColumn by remember {
+        var selectedColumn by rememberSaveable {
             mutableStateOf(
                 Column(heatId = 0L, x = 0)
             )
         }
 
-        var selectedBlock by remember {
+        var selectedBlock by rememberSaveable {
             mutableStateOf(
                 Block(
                     columnId = 0L,

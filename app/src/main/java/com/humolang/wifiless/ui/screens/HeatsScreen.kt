@@ -39,6 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -143,18 +144,7 @@ private fun HeatsTopBar(
                 )
             }
         },
-        actions = {
-//            IconButton(
-//                onClick = { /* doSomething() */ }
-//            ) {
-//                Icon(
-//                    imageVector = Icons.TwoTone.MoreVert,
-//                    contentDescription = stringResource(
-//                        id = R.string.menu
-//                    )
-//                )
-//            }
-        },
+        actions = {  },
         scrollBehavior = scrollBehavior
     )
 }
@@ -208,7 +198,7 @@ private fun HeatItem(
     modifier: Modifier = Modifier
 ) {
 
-    var cardExpanded by remember {
+    var cardExpanded by rememberSaveable {
         mutableStateOf(false)
     }
     var menuOpened by remember {

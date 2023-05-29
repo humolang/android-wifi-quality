@@ -25,7 +25,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -181,7 +181,7 @@ private fun RssiGraph(
         modifier = modifier
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            var expanded by remember {
+            var expanded by rememberSaveable {
                 mutableStateOf(true)
             }
 
@@ -264,7 +264,7 @@ private fun LinkSpeedGraph(
         modifier = modifier
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            var expanded by remember {
+            var expanded by rememberSaveable {
                 mutableStateOf(false)
             }
 
@@ -415,7 +415,7 @@ private fun WifiCapabilities(
 ) {
     Card(modifier = modifier) {
         Column(modifier = Modifier.padding(16.dp)) {
-            var expanded by remember {
+            var expanded by rememberSaveable {
                 mutableStateOf(true)
             }
 
@@ -451,7 +451,9 @@ private fun WifiCapabilities(
                 Column(
                     modifier = Modifier.padding(top = 8.dp)
                 ) {
-                    val textStyle = MaterialTheme.typography.bodyLarge
+                    val textStyle = MaterialTheme
+                        .typography
+                        .bodyLarge
 
                     val capabilities by wifiCapabilities
                         .collectAsStateWithLifecycle()
@@ -491,52 +493,11 @@ private fun WifiCapabilities(
                         modifier = Modifier.padding(top = 8.dp)
                     )
 
-                    var supportedFrequencies = UNKNOWN
-
-                    if (capabilities.is24GHzSupported) {
-                        supportedFrequencies = stringResource(
-                            id = R.string.supported24ghz
-                        )
-                    }
-                    if (capabilities.is5GHzSupported) {
-                        supportedFrequencies = if (supportedFrequencies != UNKNOWN) {
-                            "$supportedFrequencies / ${stringResource(
-                                id = R.string.supported5ghz
-                            )}"
-                        } else {
-                            stringResource(
-                                id = R.string.supported5ghz
-                            )
-                        }
-                    }
-                    if (capabilities.is6GHzSupported) {
-                        supportedFrequencies = if (supportedFrequencies != UNKNOWN) {
-                            "$supportedFrequencies / ${stringResource(
-                                id = R.string.supported6ghz
-                            )}"
-                        } else {
-                            stringResource(
-                                id = R.string.supported6ghz
-                            )
-                        }
-                    }
-                    if (capabilities.is60GHzSupported) {
-                        supportedFrequencies = if (supportedFrequencies != UNKNOWN) {
-                            "$supportedFrequencies / ${stringResource(
-                                id = R.string.supported60ghz
-                            )}"
-                        } else {
-                            stringResource(
-                                id = R.string.supported60ghz
-                            )
-                        }
-                    }
-
                     InfoRow(
                         labelText = stringResource(
                             id = R.string.supported_frequencies
                         ),
-                        infoText = supportedFrequencies,
+                        infoText = supportedFrequencies(capabilities),
                         textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
                     )
@@ -571,13 +532,61 @@ private fun WifiCapabilities(
 }
 
 @Composable
+private fun supportedFrequencies(
+    capabilities: WifiCapabilities
+): String {
+    var supportedFrequencies = UNKNOWN
+
+    if (capabilities.is24GHzSupported) {
+        supportedFrequencies = stringResource(
+            id = R.string.supported24ghz
+        )
+    }
+    if (capabilities.is5GHzSupported) {
+        supportedFrequencies = if (supportedFrequencies != UNKNOWN) {
+            "$supportedFrequencies / ${stringResource(
+                id = R.string.supported5ghz
+            )}"
+        } else {
+            stringResource(
+                id = R.string.supported5ghz
+            )
+        }
+    }
+    if (capabilities.is6GHzSupported) {
+        supportedFrequencies = if (supportedFrequencies != UNKNOWN) {
+            "$supportedFrequencies / ${stringResource(
+                id = R.string.supported6ghz
+            )}"
+        } else {
+            stringResource(
+                id = R.string.supported6ghz
+            )
+        }
+    }
+    if (capabilities.is60GHzSupported) {
+        supportedFrequencies = if (supportedFrequencies != UNKNOWN) {
+            "$supportedFrequencies / ${stringResource(
+                id = R.string.supported60ghz
+            )}"
+        } else {
+            stringResource(
+                id = R.string.supported60ghz
+            )
+        }
+    }
+
+    return supportedFrequencies
+}
+
+@Composable
 private fun WifiProperties(
     wifiProperties: StateFlow<WifiProperties>,
     modifier: Modifier = Modifier
 ) {
     Card(modifier = modifier) {
         Column(modifier = Modifier.padding(16.dp)) {
-            var expanded by remember {
+            var expanded by rememberSaveable {
                 mutableStateOf(true)
             }
 
@@ -613,7 +622,9 @@ private fun WifiProperties(
                 Column(
                     modifier = Modifier.padding(top = 8.dp)
                 ) {
-                    val textStyle = MaterialTheme.typography.bodyLarge
+                    val textStyle = MaterialTheme
+                        .typography
+                        .bodyLarge
 
                     val properties by wifiProperties
                         .collectAsStateWithLifecycle()

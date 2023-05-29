@@ -14,17 +14,17 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -39,7 +39,6 @@ import com.humolang.wifiless.ui.screens.components.TransformableHeatmap
 import com.humolang.wifiless.ui.viewmodels.MappingViewModel
 import kotlinx.coroutines.flow.StateFlow
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MappingScreen(
     heatId: Long,
@@ -52,19 +51,12 @@ fun MappingScreen(
         mappingViewModel.loadHeatmap(heatId)
     }
 
-    val scrollBehavior = TopAppBarDefaults
-        .pinnedScrollBehavior()
-
     Scaffold(
-        modifier = Modifier
-            .nestedScroll(
-                scrollBehavior.nestedScrollConnection
-            ),
+        modifier = Modifier,
         topBar = {
             MappingTopBar(
                 heatFlow = mappingViewModel.heat,
-                popBackStack = popBackStack,
-                scrollBehavior = scrollBehavior
+                popBackStack = popBackStack
             )
         },
         floatingActionButton = {
@@ -99,11 +91,14 @@ fun MappingScreen(
 private fun MappingTopBar(
     heatFlow: StateFlow<Heat>,
     popBackStack: () -> Unit,
-    scrollBehavior: TopAppBarScrollBehavior,
     modifier: Modifier = Modifier
 ) {
     val heat by heatFlow
         .collectAsStateWithLifecycle()
+
+    val appBarContainerColor = MaterialTheme
+        .colorScheme
+        .surfaceColorAtElevation(3.dp)
 
     TopAppBar(
         modifier = modifier,
@@ -126,19 +121,10 @@ private fun MappingTopBar(
                 )
             }
         },
-        actions = {
-//            IconButton(
-//                onClick = { /* doSomething() */ }
-//            ) {
-//                Icon(
-//                    imageVector = Icons.TwoTone.Delete,
-//                    contentDescription = stringResource(
-//                        id = R.string.delete
-//                    )
-//                )
-//            }
-        },
-        scrollBehavior = scrollBehavior
+        actions = {  },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = appBarContainerColor
+        )
     )
 }
 
