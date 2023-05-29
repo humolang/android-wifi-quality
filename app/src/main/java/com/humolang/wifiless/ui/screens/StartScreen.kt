@@ -32,12 +32,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.humolang.wifiless.R
 import com.humolang.wifiless.data.datasources.DEFAULT_HEAT_ID
+import com.humolang.wifiless.data.datasources.UNKNOWN
 import com.humolang.wifiless.data.datasources.model.WifiCapabilities
 import com.humolang.wifiless.data.datasources.model.WifiProperties
 import com.humolang.wifiless.ui.screens.components.GraphDrawer
@@ -454,183 +456,114 @@ private fun WifiCapabilities(
                     val capabilities by wifiCapabilities
                         .collectAsStateWithLifecycle()
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.wifi_standard
+                        ),
+                        infoText = stringResource(
+                            capabilities.wifiStandardStringId
+                        ),
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.wifi_standard
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
+                    )
+
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.security_type
+                        ),
+                        infoText = stringResource(
+                            id = capabilities.securityTypeStringId
+                        ),
+                        textStyle = textStyle,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.frequency
+                        ),
+                        infoText = stringResource(
+                            id = R.string.frequency_value,
+                            capabilities.frequency,
+                            capabilities.frequencyUnits
+                        ),
+                        textStyle = textStyle,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+
+                    var supportedFrequencies = UNKNOWN
+
+                    if (capabilities.is24GHzSupported) {
+                        supportedFrequencies = stringResource(
+                            id = R.string.supported24ghz
                         )
-                        Text(
-                            text = stringResource(
-                                capabilities.wifiStandardStringId
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
+                    }
+                    if (capabilities.is5GHzSupported) {
+                        supportedFrequencies = if (supportedFrequencies != UNKNOWN) {
+                            "$supportedFrequencies / ${stringResource(
+                                id = R.string.supported5ghz
+                            )}"
+                        } else {
+                            stringResource(
+                                id = R.string.supported5ghz
+                            )
+                        }
+                    }
+                    if (capabilities.is6GHzSupported) {
+                        supportedFrequencies = if (supportedFrequencies != UNKNOWN) {
+                            "$supportedFrequencies / ${stringResource(
+                                id = R.string.supported6ghz
+                            )}"
+                        } else {
+                            stringResource(
+                                id = R.string.supported6ghz
+                            )
+                        }
+                    }
+                    if (capabilities.is60GHzSupported) {
+                        supportedFrequencies = if (supportedFrequencies != UNKNOWN) {
+                            "$supportedFrequencies / ${stringResource(
+                                id = R.string.supported60ghz
+                            )}"
+                        } else {
+                            stringResource(
+                                id = R.string.supported60ghz
+                            )
+                        }
                     }
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.supported_frequencies
+                        ),
+                        infoText = supportedFrequencies,
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.security_type
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                id = capabilities.securityTypeStringId
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.downstream_bandwidth
+                        ),
+                        infoText = stringResource(
+                            id = R.string.bandwidth_kbps,
+                            capabilities.downstreamBandwidthKbps
+                        ),
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.frequency),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                id = R.string.frequency_value,
-                                capabilities.frequency,
-                                capabilities.frequencyUnits
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.upstream_bandwidth
+                        ),
+                        infoText = stringResource(
+                            id = R.string.bandwidth_kbps,
+                            capabilities.upstreamBandwidthKbps
+                        ),
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.downstream_bandwidth),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                id = R.string.bandwidth_kbps,
-                                capabilities.downstreamBandwidthKbps
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.upstream_bandwidth),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                id = R.string.bandwidth_kbps,
-                                capabilities.upstreamBandwidthKbps
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.has_hidden_ssid
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                id = if (capabilities.hasHiddenSsid)
-                                    R.string.yes_string
-                                else R.string.no_string
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.ssid
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = capabilities.ssid,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.bssid),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = capabilities.bssid,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
                 }
             }
         }
@@ -685,140 +618,79 @@ private fun WifiProperties(
                     val properties by wifiProperties
                         .collectAsStateWithLifecycle()
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.ipv4_address
+                        ),
+                        infoText = properties.ipv4Address,
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.ip_address
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = properties.ipAddress,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.ipv6_address
+                        ),
+                        infoText = properties.ipv6Address,
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.nat64_prefix
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = properties.nat64Prefix,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.interface_name
+                        ),
+                        infoText = properties.interfaceName,
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.interface_name
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = properties.interfaceName,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.dhcp_server_address
+                        ),
+                        infoText = properties.dhcpServer,
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.dhcp_server_address
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = properties.dhcpServer,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.dns_server
+                        ),
+                        infoText = properties.dnsServer,
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.dns_servers
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Column(
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f)
-                        ) {
-                            for (server in properties.dnsServers) {
-                                Text(
-                                    text = server,
-                                    modifier = Modifier
-                                        .padding(top = 4.dp),
-                                    style = textStyle
-                                )
-                            }
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.http_proxy
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = properties.httpProxy,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun InfoRow(
+    labelText: String,
+    infoText: String,
+    textStyle: TextStyle,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+    ) {
+        Text(
+            text = labelText,
+            modifier = Modifier
+                .padding(end = 8.dp)
+                .weight(1f),
+            style = textStyle
+        )
+        Text(
+            text = infoText,
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .weight(1f),
+            style = textStyle
+        )
     }
 }

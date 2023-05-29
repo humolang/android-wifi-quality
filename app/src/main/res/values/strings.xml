@@ -50,20 +50,21 @@
     <string name="downstream_bandwidth">Downstream Bandwidth</string>
     <string name="upstream_bandwidth">Upstream Bandwidth</string>
     <string name="bandwidth_kbps">%1$d Kbps</string>
-    <string name="ssid" translatable="false">SSID</string>
-    <string name="bssid" translatable="false">BSSID</string>
     <string name="security_type">Security Type</string>
     <string name="frequency">Frequency</string>
     <string name="frequency_value" translatable="false">%1$d %2$s</string>
-    <string name="has_hidden_ssid">Has Hidden SSID</string>
+    <string name="supported_frequencies">Supported Frequencies</string>
+    <string name="supported24ghz">2.4 GHz</string>
+    <string name="supported5ghz">5 GHz</string>
+    <string name="supported6ghz">6 GHz</string>
+    <string name="supported60ghz">60 GHz</string>
 
     <string name="properties">Properties</string>
     <string name="dhcp_server_address">DHCP Server</string>
-    <string name="dns_servers">DNS Servers</string>
-    <string name="http_proxy">HTTP Proxy</string>
+    <string name="dns_server">DNS Server</string>
     <string name="interface_name">Interface Name</string>
-    <string name="ip_address">IP Address</string>
-    <string name="nat64_prefix">NAT64 Prefix</string>
+    <string name="ipv4_address">IPv4 Address</string>
+    <string name="ipv6_address">IPv6 Address</string>
 
     <string name="security_type_unknown">Unknown</string>
     <string name="security_type_open">For an open network</string>

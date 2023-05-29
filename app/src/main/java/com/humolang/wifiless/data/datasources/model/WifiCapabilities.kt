@@ -3,17 +3,19 @@ package com.humolang.wifiless.data.datasources.model
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiInfo
 import com.humolang.wifiless.R
-import com.humolang.wifiless.data.datasources.UNKNOWN
 
 data class WifiCapabilities(
     val wifiStandard: Int = -1,
     val securityType: Int  = -1,
+
     val frequency: Int  = 0,
+    val is24GHzSupported: Boolean = false,
+    val is5GHzSupported: Boolean = false,
+    val is6GHzSupported: Boolean = false,
+    val is60GHzSupported: Boolean = false,
+
     val downstreamBandwidthKbps: Int = 0,
     val upstreamBandwidthKbps: Int = 0,
-    val hasHiddenSsid: Boolean = false,
-    val ssid: String = UNKNOWN,
-    val bssid: String = UNKNOWN,
 
     val frequencyUnits: String = ""
 ) {

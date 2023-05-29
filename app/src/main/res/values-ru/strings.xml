@@ -46,14 +46,14 @@
     <string name="bandwidth_kbps">%1$d Кбит/с</string>
     <string name="security_type">Тип безопасности</string>
     <string name="frequency">Частота</string>
-    <string name="has_hidden_ssid">Скрытый SSID</string>
+    <string name="supported_frequencies">Поддерживаемые частоты</string>
+    <string name="supported24ghz">2.4 ГГц</string>
     <string name="properties">Характеристики</string>
     <string name="dhcp_server_address">DHCP сервер</string>
-    <string name="dns_servers">DNS сервера</string>
-    <string name="http_proxy">HTTP прокси</string>
+    <string name="dns_server">DNS сервер</string>
     <string name="interface_name">Интерфейс</string>
-    <string name="ip_address">IP адрес</string>
-    <string name="nat64_prefix">NAT64 префикс</string>
+    <string name="ipv4_address">IPv4 адрес</string>
+    <string name="ipv6_address">IPv6 адрес</string>
     <string name="security_type_unknown">Неизвестный</string>
     <string name="security_type_open">Для открытой сети</string>
     <string name="security_type_wep">Для сети WEP</string>
@@ -70,4 +70,7 @@
     <string name="security_type_passpoint_r3">Для сети Passpoint R3</string>
     <string name="security_type_dpp">Для сети Easy Connect (DPP)</string>
     <string name="wifi_standard_unknown">Неизвестный Wi-Fi стандарт</string>
+    <string name="supported5ghz">5 ГГц</string>
+    <string name="supported6ghz">6 ГГц</string>
+    <string name="supported60ghz">60 ГГц</string>
 </resources>
