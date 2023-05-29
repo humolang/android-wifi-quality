@@ -189,51 +189,6 @@ class PlanningTool(
         updateBlocks(updatedBlocksList)
     }
 
-//    suspend fun insertTopRow(heatId: Long) {
-//        val oldHeat = heatDao.loadHeatById(heatId)
-//        val updatedHeat = oldHeat.copy(
-//            rows = oldHeat.rows + 1
-//        )
-//        heatDao.update(updatedHeat)
-//
-//        val blocks = columnDao.loadBlocks(updatedHeat.id)
-//        val updatedBlocksList = mutableListOf<Block>()
-//        val blocksList = mutableListOf<Block>()
-//
-//        for (column in blocks) {
-//            for (block in column.value) {
-//                val updated = block.copy(
-//                    y = block.y + 1
-//                )
-//
-//                updatedBlocksList.add(updated)
-//            }
-//
-//            val block = Block(
-//                columnId = column.key.id,
-//                y = 0
-//            )
-//
-//            blocksList.add(block)
-//        }
-//        updateBlocks(updatedBlocksList)
-//        insertBlocks(blocksList)
-//    }
-//
-//    private suspend fun insertBottomRow(heat: Heat) {
-//        val columns = columnDao.loadColumns(heat.id)
-//        val blocksList = mutableListOf<Block>()
-//        for (column in columns) {
-//            val block = Block(
-//                columnId = column.id,
-//                y = heat.rows - 1
-//            )
-//
-//            blocksList.add(block)
-//        }
-//        insertBlocks(blocksList)
-//    }
-
     suspend fun insertColumn(heatId: Long, x: Int) {
         val oldHeat = heatDao.loadHeatById(heatId)
         val updatedHeat = oldHeat.copy(
@@ -284,68 +239,6 @@ class PlanningTool(
         }
         updateColumns(updatedColumnsList)
     }
-
-//    private suspend fun insertRightColumn(heatId: Long) {
-//        val oldHeat = heatDao.loadHeatById(heatId)
-//        val updatedHeat = oldHeat.copy(
-//            columns = oldHeat.columns + 1
-//        )
-//        heatDao.update(updatedHeat)
-//
-//        val column = Column(
-//            heatId = updatedHeat.id,
-//            x = updatedHeat.columns - 1
-//        )
-//        val columnId = columnDao.insert(column).first()
-//
-//        val blocksList = mutableListOf<Block>()
-//        for (row in 0 until updatedHeat.rows) {
-//            val block = Block(
-//                columnId = columnId,
-//                y = row
-//            )
-//
-//            blocksList.add(block)
-//        }
-//        insertBlocks(blocksList)
-//    }
-
-//    private suspend fun insertLeftColumn(heatId: Long) {
-//        val oldHeat = heatDao.loadHeatById(heatId)
-//        val updatedHeat = oldHeat.copy(
-//            columns = oldHeat.columns + 1
-//        )
-//        heatDao.update(updatedHeat)
-//
-//        val newColumn = Column(
-//            heatId = updatedHeat.id,
-//            x = 0
-//        )
-//        val columnId = columnDao.insert(newColumn).first()
-//
-//        val blocks = columnDao.loadBlocks(updatedHeat.id)
-//        val updatedColumnsList = mutableListOf<Column>()
-//
-//        for (column in blocks.keys) {
-//            val updatedColumn = column.copy(
-//                x = column.x + 1
-//            )
-//
-//            updatedColumnsList.add(updatedColumn)
-//        }
-//        updateColumns(updatedColumnsList)
-//
-//        val blocksList = mutableListOf<Block>()
-//        for (y in 0 until updatedHeat.rows) {
-//            val block = Block(
-//                columnId = columnId,
-//                y = y
-//            )
-//
-//            blocksList.add(block)
-//        }
-//        insertBlocks(blocksList)
-//    }
 
     suspend fun deleteRow(heatId: Long, y: Int) {
         val oldHeat = heatDao.loadHeatById(heatId)
