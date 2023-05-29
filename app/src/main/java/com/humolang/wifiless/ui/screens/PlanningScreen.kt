@@ -2,7 +2,7 @@ package com.humolang.wifiless.ui.screens
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -369,11 +369,7 @@ private fun PlanningField(
     onDeleteColumnClicked: (Long, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = modifier
-    ) {
+    Box(modifier = modifier) {
         val heat by heatFlow
             .collectAsStateWithLifecycle()
         val blocks by blocksFlow
@@ -414,7 +410,9 @@ private fun PlanningField(
 
                 editMenuExpanded = true
             },
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
         )
 
         BlockTypeMenu(
