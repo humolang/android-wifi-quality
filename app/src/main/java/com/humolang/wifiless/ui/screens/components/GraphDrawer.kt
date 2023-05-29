@@ -110,18 +110,21 @@ fun GraphDrawer(
     ) {
         val lineColor = MaterialTheme
             .colorScheme
-            .tertiary
+            .onTertiaryContainer
             .copy(alpha = 0.4f)
 
         val graphColor = MaterialTheme
             .colorScheme
-            .onTertiaryContainer
-            .copy(alpha = 0.6f)
+            .tertiary
 
         val labelMeasurer = rememberTextMeasurer()
         val labelStyle = MaterialTheme
             .typography
-            .labelSmall
+            .labelSmall.copy(
+                color = MaterialTheme
+                    .colorScheme
+                    .onTertiaryContainer
+            )
 
         Canvas(
             modifier = Modifier
