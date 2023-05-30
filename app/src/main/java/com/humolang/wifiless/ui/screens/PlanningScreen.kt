@@ -366,13 +366,13 @@ private fun PlanningField(
             mutableStateOf(false)
         }
 
-        var selectedColumn by rememberSaveable {
+        var selectedColumn by remember {
             mutableStateOf(
                 Column(heatId = 0L, x = 0)
             )
         }
 
-        var selectedBlock by rememberSaveable {
+        var selectedBlock by remember {
             mutableStateOf(
                 Block(
                     columnId = 0L,
