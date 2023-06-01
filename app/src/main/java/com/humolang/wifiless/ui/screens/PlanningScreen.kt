@@ -55,7 +55,6 @@ import com.humolang.wifiless.ui.screens.components.TransformableHeatmap
 import com.humolang.wifiless.ui.viewmodels.PlanningViewModel
 import kotlinx.coroutines.flow.StateFlow
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlanningScreen(
     heatId: Long,
@@ -438,63 +437,63 @@ private fun BlockTypeMenu(
         onDismissRequest = onDismissRequest,
         modifier = modifier
     ) {
-        DropdownMenuItem(
+        MenuItem(
             stringId = R.string.armchair,
             drawableId = R.drawable.twotone_chair_24
         ) {
             onItemClicked(BlockType.ARMCHAIR)
         }
 
-        DropdownMenuItem(
+        MenuItem(
             stringId = R.string.chair,
             drawableId = R.drawable.twotone_chair_alt_24
         ) {
             onItemClicked(BlockType.CHAIR)
         }
 
-        DropdownMenuItem(
+        MenuItem(
             stringId = R.string.computer,
             drawableId = R.drawable.twotone_computer_24
         ) {
             onItemClicked(BlockType.COMPUTER)
         }
 
-        DropdownMenuItem(
+        MenuItem(
             stringId = R.string.router,
             drawableId = R.drawable.twotone_router_24
         ) {
             onItemClicked(BlockType.ROUTER)
         }
 
-        DropdownMenuItem(
+        MenuItem(
             stringId = R.string.table,
             drawableId = R.drawable.twotone_table_restaurant_24
         ) {
             onItemClicked(BlockType.TABLE)
         }
 
-        DropdownMenuItem(
+        MenuItem(
             stringId = R.string.tv,
             drawableId = R.drawable.twotone_tv_24
         ) {
             onItemClicked(BlockType.TV)
         }
 
-        DropdownMenuItem(
+        MenuItem(
             stringId = R.string.window,
             drawableId = R.drawable.twotone_window_24
         ) {
             onItemClicked(BlockType.WINDOW)
         }
 
-        DropdownMenuItem(
+        MenuItem(
             stringId = R.string.wall,
             drawableId = R.drawable.twotone_fence_24
         ) {
             onItemClicked(BlockType.WALL)
         }
 
-        DropdownMenuItem(
+        MenuItem(
             stringId = R.string.free,
             drawableId = R.drawable.twotone_air_24
         ) {
@@ -521,7 +520,7 @@ private fun EditPlanMenu(
         onDismissRequest = onDismissRequest,
         modifier = modifier
     ) {
-        DropdownMenuItem(
+        MenuItem(
             stringId = R.string.insert_row_top,
             drawableId = R.drawable
                 .twotone_keyboard_double_arrow_up_24
@@ -529,7 +528,7 @@ private fun EditPlanMenu(
             onInsertRowClicked(heat.id, block.y)
             onDismissRequest()
         }
-        DropdownMenuItem(
+        MenuItem(
             stringId = R.string.insert_column_right,
             drawableId = R.drawable
                 .twotone_keyboard_double_arrow_right_24
@@ -537,7 +536,7 @@ private fun EditPlanMenu(
             onInsertColumnClicked(heat.id, column.x + 1)
             onDismissRequest()
         }
-        DropdownMenuItem(
+        MenuItem(
             stringId = R.string.insert_row_bottom,
             drawableId = R.drawable
                 .twotone_keyboard_double_arrow_down_24
@@ -545,7 +544,7 @@ private fun EditPlanMenu(
             onInsertRowClicked(heat.id, block.y + 1)
             onDismissRequest()
         }
-        DropdownMenuItem(
+        MenuItem(
             stringId = R.string.insert_column_left,
             drawableId = R.drawable
                 .twotone_keyboard_double_arrow_left_24
@@ -556,14 +555,14 @@ private fun EditPlanMenu(
 
         Divider()
 
-        DropdownMenuItem(
+        MenuItem(
             stringId = R.string.delete_row,
             imageVector = Icons.TwoTone.Delete
         ) {
             onDeleteRowClicked(heat.id, block.y)
             onDismissRequest()
         }
-        DropdownMenuItem(
+        MenuItem(
             stringId = R.string.delete_column,
             imageVector = Icons.TwoTone.Delete
         ) {
@@ -574,7 +573,7 @@ private fun EditPlanMenu(
 }
 
 @Composable
-private fun DropdownMenuItem(
+private fun MenuItem(
     @StringRes stringId: Int,
     @DrawableRes drawableId: Int,
     onClick: () -> Unit
@@ -600,7 +599,7 @@ private fun DropdownMenuItem(
 }
 
 @Composable
-private fun DropdownMenuItem(
+private fun MenuItem(
     @StringRes stringId: Int,
     imageVector: ImageVector,
     onClick: () -> Unit

@@ -6,7 +6,9 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.net.wifi.WifiManager
+import androidx.datastore.preferences.preferencesDataStore
 import com.humolang.wifiless.data.datasources.CapabilitiesCallback
+import com.humolang.wifiless.data.datasources.DATA_STORE_NAME
 import com.humolang.wifiless.data.datasources.LinkSpeedValue
 import com.humolang.wifiless.data.datasources.PropertiesCallback
 import com.humolang.wifiless.data.datasources.RssiValue
@@ -14,11 +16,17 @@ import com.humolang.wifiless.data.datasources.db.MappingDatabase
 import com.humolang.wifiless.data.repositories.HeatsRepository
 import com.humolang.wifiless.data.repositories.MappingTool
 import com.humolang.wifiless.data.repositories.PlanningTool
+import com.humolang.wifiless.data.repositories.SettingsRepository
 import com.humolang.wifiless.data.repositories.WifiParameters
+
+val Context.dataStore by preferencesDataStore(
+    name = DATA_STORE_NAME
+)
 
 class WiFilessApplication : Application() {
 
     lateinit var wifiParameters: WifiParameters
+    lateinit var settingsRepository: SettingsRepository
     lateinit var planningTool: PlanningTool
     lateinit var mappingTool: MappingTool
     lateinit var heatsRepository: HeatsRepository
@@ -54,6 +62,10 @@ class WiFilessApplication : Application() {
             linkSpeedValue = linkSpeedValue,
             capabilitiesCallback = capabilitiesCallback,
             propertiesCallback = propertiesCallback
+        )
+
+        settingsRepository = SettingsRepository(
+            context = this
         )
 
         val database = MappingDatabase

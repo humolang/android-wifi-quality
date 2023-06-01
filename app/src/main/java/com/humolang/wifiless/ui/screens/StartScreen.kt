@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.KeyboardArrowDown
 import androidx.compose.material.icons.twotone.KeyboardArrowUp
+import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ElevatedButton
@@ -51,6 +52,7 @@ import kotlinx.coroutines.flow.StateFlow
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StartScreen(
+    navigateToSettings: () -> Unit,
     navigateToPlanning: (Long) -> Unit,
     navigateToHeats: () -> Unit,
     startViewModel: StartViewModel =
@@ -64,7 +66,12 @@ fun StartScreen(
             .nestedScroll(
                 scrollBehavior.nestedScrollConnection
             ),
-        topBar = { StartTopBar(scrollBehavior) },
+        topBar = {
+            StartTopBar(
+                navigateToSettings = navigateToSettings,
+                scrollBehavior = scrollBehavior
+            )
+        },
         content = { innerPadding ->
             StartContent(
                 navigateToPlanning = navigateToPlanning,
@@ -81,6 +88,7 @@ fun StartScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun StartTopBar(
+    navigateToSettings: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
     modifier: Modifier = Modifier
 ) {
@@ -107,14 +115,18 @@ private fun StartTopBar(
 //                )
 //            }
 //        },
-//        actions = {
-//            IconButton(onClick = { /* doSomething() */ }) {
-//                Icon(
-//                    imageVector = Icons.TwoTone.MoreVert,
-//                    contentDescription = stringResource(id = R.string.menu)
-//                )
-//            }
-//        },
+        actions = {
+            IconButton(
+                onClick = navigateToSettings
+            ) {
+                Icon(
+                    imageVector = Icons.TwoTone.Settings,
+                    contentDescription = stringResource(
+                        id = R.string.settings
+                    )
+                )
+            }
+        },
         scrollBehavior = scrollBehavior,
         modifier = modifier
     )

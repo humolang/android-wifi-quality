@@ -10,6 +10,7 @@ import com.humolang.wifiless.data.datasources.DEFAULT_HEAT_ID
 import com.humolang.wifiless.ui.screens.HeatsScreen
 import com.humolang.wifiless.ui.screens.MappingScreen
 import com.humolang.wifiless.ui.screens.PlanningScreen
+import com.humolang.wifiless.ui.screens.SettingsScreen
 import com.humolang.wifiless.ui.screens.StartScreen
 
 @Composable
@@ -21,13 +22,28 @@ fun WiFilessNavHost(navController: NavHostController) {
 
         composable(START_SCREEN_STRING) {
             StartScreen(
+                navigateToSettings = {
+                    navController.navigate(
+                        route = SETTINGS_SCREEN_STRING
+                    )
+                },
                 navigateToPlanning = { navArg ->
                     navController.navigate(
                         route = "$PLANNING_SCREEN_STRING/$navArg"
                     )
                 },
                 navigateToHeats = {
-                    navController.navigate(HEATS_SCREEN_STRING)
+                    navController.navigate(
+                        route = HEATS_SCREEN_STRING
+                    )
+                }
+            )
+        }
+
+        composable(SETTINGS_SCREEN_STRING) {
+            SettingsScreen(
+                popBackStack = {
+                    navController.popBackStack()
                 }
             )
         }

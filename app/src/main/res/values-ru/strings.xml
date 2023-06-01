@@ -15,6 +15,7 @@
     <string name="plan_name">Название плана</string>
     <string name="edit_name">Редактировать название</string>
     <string name="accept_name">Принять название</string>
+    <string name="settings">Настройки</string>
     <string name="insert_row_top">Вставить строку сверху</string>
     <string name="insert_row_bottom">Вставить строку снизу</string>
     <string name="insert_column_right">Вставить столбец справа</string>
@@ -73,4 +74,12 @@
     <string name="supported5ghz">5 ГГц</string>
     <string name="supported6ghz">6 ГГц</string>
     <string name="supported60ghz">60 ГГц</string>
+    <string name="color_scheme">Цветовая схема</string>
+    <string name="theme">Тема</string>
+    <string name="theme_settings">Настройки темы</string>
+    <string name="dynamic_colors">Динамические цвета</string>
+    <string name="default_colors">Цвета по умолчанию</string>
+    <string name="system_theme">Системная тема</string>
+    <string name="light_theme">Светлая тема</string>
+    <string name="dark_theme">Темная тема</string>
 </resources>
