@@ -109,7 +109,8 @@ fun RssiBlock(
             tertiaryContainer.copy(
                 //alpha = 1 - rssiColor,
                 red = rssiColor,
-                blue = rssiColor
+                green = 1f - rssiColor,
+                blue = 0f
             )
         } else {
             tertiaryContainer

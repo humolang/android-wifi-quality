@@ -43,12 +43,14 @@ fun RssiHorizontalScale(
             .tertiaryContainer.copy(
                 //alpha = 0f,
                 red = 1f,
-                blue = 1f
+                green = 0f,
+                blue = 0f
             )
         val endColor = MaterialTheme.colorScheme
             .tertiaryContainer.copy(
                 //alpha = 1f,
                 red = 0f,
+                green = 1f,
                 blue = 0f
             )
 
