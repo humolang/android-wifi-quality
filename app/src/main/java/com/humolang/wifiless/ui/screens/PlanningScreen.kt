@@ -459,6 +459,13 @@ private fun BlockTypeMenu(
         }
 
         MenuItem(
+            stringId = R.string.door,
+            drawableId = R.drawable.twotone_door_front_24
+        ) {
+            onItemClicked(BlockType.DOOR)
+        }
+
+        MenuItem(
             stringId = R.string.router,
             drawableId = R.drawable.twotone_router_24
         ) {
