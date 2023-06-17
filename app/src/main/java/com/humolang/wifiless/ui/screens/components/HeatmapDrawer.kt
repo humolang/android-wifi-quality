@@ -3,15 +3,17 @@ package com.humolang.wifiless.ui.screens.components
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +29,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -128,7 +131,6 @@ fun TransformableHeatmap(
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Heatmap(
     heat: Heat,
@@ -152,10 +154,46 @@ fun Heatmap(
     Canvas(
         modifier = modifier
             .aspectRatio(ratioValue)
-            .combinedClickable(
-                onClick = {  },
-                onLongClick = {  }
-            )
+            .pointerInput(ratioValue) {
+                detectTapGestures(
+                    onTap = { offset ->
+                        val blockSize = Size(
+                            width = size.height
+                                .toFloat() / heat.rows,
+                            height = size.width
+                                .toFloat() / heat.columns
+                        )
+
+                        val x = (offset.x / blockSize.width).toInt()
+                        val y = (offset.y / blockSize.height).toInt()
+
+                        val column = blocks.keys.find { it.x == x }
+                        val block = blocks[column]?.find { it.y == y }
+
+                        if (block != null) {
+                            onBlockClicked(block)
+                        }
+                    },
+                    onLongPress = { offset ->
+                        val blockSize = Size(
+                            width = size.height
+                                .toFloat() / heat.rows,
+                            height = size.width
+                                .toFloat() / heat.columns
+                        )
+
+                        val x = (offset.x / blockSize.width).toInt()
+                        val y = (offset.y / blockSize.height).toInt()
+
+                        val column = blocks.keys.find { it.x == x }
+                        val block = blocks[column]?.find { it.y == y }
+
+                        if (column != null && block != null) {
+                            onBlockLongClicked(column, block)
+                        }
+                    }
+                )
+            }
     ) {
         drawRect(
             color = tertiaryContainer
