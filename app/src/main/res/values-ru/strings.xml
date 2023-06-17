@@ -36,7 +36,7 @@
     <string name="label_y_rssi">RSSI, дБм</string>
     <string name="label_y_link_speed">Скорость, %1$s</string>
     <string name="rssi_dbm">%1$d дБм</string>
-    <string name="link_speed">Скорость соединения</string>
+    <string name="link_speed">Скорость</string>
     <string name="tools_buttons">Инструменты</string>
     <string name="yes_string">Да</string>
     <string name="no_string">Нет</string>
