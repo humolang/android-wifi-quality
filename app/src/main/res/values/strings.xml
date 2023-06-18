@@ -67,6 +67,7 @@
     <string name="supported5ghz">5 GHz</string>
     <string name="supported6ghz">6 GHz</string>
     <string name="supported60ghz">60 GHz</string>
+    <string name="wifi_is_off">Wi-Fi is off</string>
 
     <string name="properties">Properties</string>
     <string name="dhcp_server_address">DHCP Server</string>

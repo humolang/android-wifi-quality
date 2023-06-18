@@ -83,6 +83,7 @@ class CapabilitiesCallback(
     private fun updateWifiCapabilities(
         networkCapabilities: NetworkCapabilities
     ): WifiCapabilities {
+
         val isAndroidQ = Build.VERSION.SDK_INT >=
                 Build.VERSION_CODES.Q
         val isAndroidR = Build.VERSION.SDK_INT >=
@@ -98,6 +99,7 @@ class CapabilitiesCallback(
         }
 
         val capabilities = WifiCapabilities(
+            isWifiEnabled = wifiManager.isWifiEnabled,
             wifiStandard = if (isAndroidR)
                 wifiInfo.wifiStandard
             else -1,

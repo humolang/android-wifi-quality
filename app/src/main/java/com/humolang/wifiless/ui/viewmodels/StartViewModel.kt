@@ -77,6 +77,11 @@ class StartViewModel(
     val wifiProperties: StateFlow<WifiProperties>
         get() = _wifiProperties.asStateFlow()
 
+    private val _isWifiEnabled =
+        MutableStateFlow(false)
+    val isWifiEnabled: StateFlow<Boolean>
+        get() = _isWifiEnabled.asStateFlow()
+
     init {
         viewModelScope.launch {
             launch { collectLatestRssi() }
@@ -131,6 +136,7 @@ class StartViewModel(
     private suspend fun collectWifiCapabilities() {
         wifiParameters.wifiCapabilities.collect { capabilities ->
             _wifiCapabilities.value = capabilities
+            _isWifiEnabled.value = capabilities.isWifiEnabled
         }
     }
 

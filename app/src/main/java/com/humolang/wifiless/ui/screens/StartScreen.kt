@@ -20,12 +20,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,6 +65,25 @@ fun StartScreen(
     val scrollBehavior = TopAppBarDefaults
         .pinnedScrollBehavior()
 
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
+
+    val isWifiEnabled by startViewModel
+        .isWifiEnabled.collectAsStateWithLifecycle()
+
+    if (!isWifiEnabled) {
+        val message = stringResource(
+            id = R.string.wifi_is_off
+        )
+
+        LaunchedEffect(key1 = isWifiEnabled) {
+            snackbarHostState.showSnackbar(
+                message = message
+            )
+        }
+    }
+
     Scaffold(
         modifier = Modifier
             .nestedScroll(
@@ -71,6 +94,9 @@ fun StartScreen(
                 navigateToSettings = navigateToSettings,
                 scrollBehavior = scrollBehavior
             )
+        },
+        snackbarHost = {
+            SnackbarHost(snackbarHostState)
         },
         content = { innerPadding ->
             StartContent(
@@ -107,14 +133,6 @@ private fun StartTopBar(
                 )
             }
         },
-//        navigationIcon = {
-//            IconButton(onClick = { /* doSomething() */ }) {
-//                Icon(
-//                    imageVector = Icons.TwoTone.Menu,
-//                    contentDescription = stringResource(id = R.string.menu)
-//                )
-//            }
-//        },
         actions = {
             IconButton(
                 onClick = navigateToSettings
@@ -140,6 +158,7 @@ private fun StartContent(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.padding(16.dp)) {
+
         RssiGraph(
             dequeCapacity = startViewModel.dequeCapacity,
             rssiGraphState = startViewModel.rssiGraphState,

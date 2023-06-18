@@ -5,6 +5,8 @@ import android.net.wifi.WifiInfo
 import com.humolang.wifiless.R
 
 data class WifiCapabilities(
+    val isWifiEnabled: Boolean = false,
+
     val wifiStandard: Int = -1,
     val securityType: Int  = -1,
 
