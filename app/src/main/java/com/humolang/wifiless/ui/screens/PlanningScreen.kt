@@ -373,30 +373,29 @@ private fun PlanningField(
 
         var selectedBlock by remember {
             mutableStateOf(
-                Block(
-                    columnId = 0L,
-                    y = 0
-                )
+                Block(columnId = 0L, y = 0)
             )
         }
 
-        TransformableHeatmap(
-            heat = heat,
-            blocks = blocks,
-            onBlockClicked = { block ->
-                selectedBlock = block
-                typeMenuExpanded = true
-            },
-            onBlockLongClicked = { column, block ->
-                selectedColumn = column
-                selectedBlock = block
+        if (blocks.isNotEmpty()) {
+            TransformableHeatmap(
+                heat = heat,
+                blocks = blocks,
+                onBlockClicked = { block ->
+                    selectedBlock = block
+                    typeMenuExpanded = true
+                },
+                onBlockLongClicked = { column, block ->
+                    selectedColumn = column
+                    selectedBlock = block
 
-                editMenuExpanded = true
-            },
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        )
+                    editMenuExpanded = true
+                },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            )
+        }
 
         BlockTypeMenu(
             expanded = typeMenuExpanded,

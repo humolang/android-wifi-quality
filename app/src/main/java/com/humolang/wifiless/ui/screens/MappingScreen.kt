@@ -171,11 +171,13 @@ private fun MappingField(
         val blocks by blocksFlow
             .collectAsStateWithLifecycle()
 
-        TransformableHeatmap(
-            heat = heat,
-            blocks = blocks,
-            onBlockClicked = onBlockClicked,
-            modifier = Modifier.padding(16.dp)
-        )
+        if (blocks.isNotEmpty()) {
+            TransformableHeatmap(
+                heat = heat,
+                blocks = blocks,
+                onBlockClicked = onBlockClicked,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
     }
 }

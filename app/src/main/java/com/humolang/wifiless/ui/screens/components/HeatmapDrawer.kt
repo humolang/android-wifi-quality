@@ -3,17 +3,14 @@ package com.humolang.wifiless.ui.screens.components
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -155,38 +152,43 @@ fun Heatmap(
         modifier = modifier
             .aspectRatio(ratioValue)
             .pointerInput(ratioValue) {
+                val blockSize = Size(
+                    width = size.height
+                        .toFloat() / heat.rows,
+                    height = size.width
+                        .toFloat() / heat.columns
+                )
+
                 detectTapGestures(
                     onTap = { offset ->
-                        val blockSize = Size(
-                            width = size.height
-                                .toFloat() / heat.rows,
-                            height = size.width
-                                .toFloat() / heat.columns
+                        val column = findColumn(
+                            offset = offset,
+                            blockSize = blockSize,
+                            blocks = blocks
                         )
-
-                        val x = (offset.x / blockSize.width).toInt()
-                        val y = (offset.y / blockSize.height).toInt()
-
-                        val column = blocks.keys.find { it.x == x }
-                        val block = blocks[column]?.find { it.y == y }
+                        val block = findBlock(
+                            offset = offset,
+                            blockSize = blockSize,
+                            blocks = blocks,
+                            column = column
+                        )
 
                         if (block != null) {
                             onBlockClicked(block)
                         }
                     },
                     onLongPress = { offset ->
-                        val blockSize = Size(
-                            width = size.height
-                                .toFloat() / heat.rows,
-                            height = size.width
-                                .toFloat() / heat.columns
+                        val column = findColumn(
+                            offset = offset,
+                            blockSize = blockSize,
+                            blocks = blocks
                         )
-
-                        val x = (offset.x / blockSize.width).toInt()
-                        val y = (offset.y / blockSize.height).toInt()
-
-                        val column = blocks.keys.find { it.x == x }
-                        val block = blocks[column]?.find { it.y == y }
+                        val block = findBlock(
+                            offset = offset,
+                            blockSize = blockSize,
+                            blocks = blocks,
+                            column = column
+                        )
 
                         if (column != null && block != null) {
                             onBlockLongClicked(column, block)
@@ -225,30 +227,29 @@ fun Heatmap(
             }
         }
     }
+}
 
-//    Row(
-//        modifier = modifier
-//            .aspectRatio(ratioValue)
-//    ) {
-//        for (column in blocks) {
-//
-//            Column(modifier = Modifier.weight(1f)) {
-//                for (block in column.value) {
-//
-//                    RssiBlock(
-//                        block = block,
-//                        onBlockClicked = onBlockClicked,
-//                        onBlockLongClicked = { selected ->
-//                            onBlockLongClicked(column.key, selected)
-//                        },
-//                        modifier = Modifier
-//                            .fillMaxSize()
-//                            .weight(1f)
-//                    )
-//                }
-//            }
-//        }
-//    }
+private fun findColumn(
+    offset: Offset,
+    blockSize: Size,
+    blocks: Map<Column, List<Block>>
+): Column? {
+    val x = (offset.x / blockSize.width).toInt()
+    val column = blocks.keys.find { it.x == x }
+
+    return column
+}
+
+private fun findBlock(
+    offset: Offset,
+    blockSize: Size,
+    blocks: Map<Column, List<Block>>,
+    column: Column?
+): Block? {
+    val y = (offset.y / blockSize.height).toInt()
+    val block = blocks[column]?.find { it.y == y }
+
+    return block
 }
 
 private fun DrawScope.drawBlock(
@@ -260,13 +261,6 @@ private fun DrawScope.drawBlock(
     size: Size,
     strokeWidth: Float
 ) {
-    drawRect(
-        color = border,
-        topLeft = topLeft,
-        size = size,
-        style = Stroke(strokeWidth)
-    )
-
     if (block.rssi > Int.MIN_VALUE) {
         drawRssi(
             rssi = block.rssi,
@@ -293,6 +287,13 @@ private fun DrawScope.drawBlock(
             topLeft = topLeft
         )
     }
+
+    drawRect(
+        color = border,
+        topLeft = topLeft,
+        size = size,
+        style = Stroke(strokeWidth)
+    )
 }
 
 private fun DrawScope.drawRssi(
