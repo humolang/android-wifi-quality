@@ -35,10 +35,10 @@ class WifiParameters(
 
     private val _rssiValues = _latestRssi
         .map { rssi ->
-            rssiDeque.add(rssi)
+            rssiDeque.addFirst(rssi)
 
             if (rssiDeque.size > _dequeCapacity) {
-                rssiDeque.removeFirst()
+                rssiDeque.removeLast()
             }
 
             ArrayDeque(rssiDeque)
@@ -64,10 +64,10 @@ class WifiParameters(
 
     private val _linkSpeedValues = _latestLinkSpeed
         .map { linkSpeed ->
-            linkSpeedDeque.add(linkSpeed)
+            linkSpeedDeque.addFirst(linkSpeed)
 
             if (linkSpeedDeque.size > _dequeCapacity) {
-                linkSpeedDeque.removeFirst()
+                linkSpeedDeque.removeLast()
             }
 
             ArrayDeque(linkSpeedDeque)
