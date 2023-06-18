@@ -95,48 +95,58 @@ class StartViewModel(
 
     private suspend fun collectLatestRssi() {
         wifiParameters.latestRssi.collect { rssi ->
-            if (wifiParameters.minRssi > rssi) {
-                wifiParameters.updateMinRssi(rssi)
+            if (isWifiEnabled.value) {
+                if (wifiParameters.minRssi > rssi) {
+                    wifiParameters.updateMinRssi(rssi)
 
-                _rssiGraphState.value = _rssiGraphState.value.copy(
-                    minRssi = wifiParameters.minRssi
-                )
+                    _rssiGraphState.value = _rssiGraphState.value.copy(
+                        minRssi = wifiParameters.minRssi
+                    )
+                }
+
+                _latestRssi.value = rssi
             }
-
-            _latestRssi.value = rssi
         }
     }
 
     private suspend fun collectRssiValues() {
         wifiParameters.rssiValues.collect { rssiDeque ->
-            _rssiValues.value = rssiDeque
+            if (isWifiEnabled.value) {
+                _rssiValues.value = rssiDeque
+            }
         }
     }
 
     private suspend fun collectLatestLinkSpeed() {
         wifiParameters.latestLinkSpeed.collect { linkSpeed ->
-            if (wifiParameters.maxLinkSpeed < linkSpeed) {
-                wifiParameters.updateMaxLinkSpeed(linkSpeed)
+            if (isWifiEnabled.value) {
+                if (wifiParameters.maxLinkSpeed < linkSpeed) {
+                    wifiParameters.updateMaxLinkSpeed(linkSpeed)
 
-                _linkSpeedGraphState.value = _linkSpeedGraphState.value.copy(
-                    maxLinkSpeed = wifiParameters.maxLinkSpeed
-                )
+                    _linkSpeedGraphState.value = _linkSpeedGraphState.value.copy(
+                        maxLinkSpeed = wifiParameters.maxLinkSpeed
+                    )
+                }
+
+                _latestLinkSpeed.value = linkSpeed
             }
-
-            _latestLinkSpeed.value = linkSpeed
         }
     }
 
     private suspend fun collectLinkSpeedValues() {
         wifiParameters.linkSpeedValues.collect { linkSpeedDeque ->
-            _linkSpeedValues.value = linkSpeedDeque
+            if (isWifiEnabled.value) {
+                _linkSpeedValues.value = linkSpeedDeque
+            }
         }
     }
 
     private suspend fun collectWifiCapabilities() {
         wifiParameters.wifiCapabilities.collect { capabilities ->
             _wifiCapabilities.value = capabilities
-            _isWifiEnabled.value = capabilities.isWifiEnabled
+
+            _isWifiEnabled.value = capabilities
+                .isWifiEnabled
         }
     }
 
