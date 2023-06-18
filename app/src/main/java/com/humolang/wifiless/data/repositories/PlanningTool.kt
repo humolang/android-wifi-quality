@@ -257,7 +257,11 @@ class PlanningTool(
                 if (block.y == y) {
                     deletedBlocksList.add(block)
                 } else {
-                    updatedBlocksList.add(block)
+                    val updatedBlock = block.copy(
+                        y = block.y - 1
+                    )
+
+                    updatedBlocksList.add(updatedBlock)
                 }
             }
 
@@ -283,7 +287,11 @@ class PlanningTool(
                 if (column.x == x) {
                     deletedColumnsList.add(column)
                 } else {
-                    updatedColumnsList.add(column)
+                    val updatedColumn = column.copy(
+                        x = column.x - 1
+                    )
+
+                    updatedColumnsList.add(updatedColumn)
                 }
             }
 

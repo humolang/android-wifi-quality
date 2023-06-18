@@ -151,7 +151,7 @@ fun Heatmap(
     Canvas(
         modifier = modifier
             .aspectRatio(ratioValue)
-            .pointerInput(ratioValue) {
+            .pointerInput(blocks) {
                 val blockSize = Size(
                     width = size.height
                         .toFloat() / heat.rows,
@@ -166,15 +166,18 @@ fun Heatmap(
                             blockSize = blockSize,
                             blocks = blocks
                         )
-                        val block = findBlock(
-                            offset = offset,
-                            blockSize = blockSize,
-                            blocks = blocks,
-                            column = column
-                        )
 
-                        if (block != null) {
-                            onBlockClicked(block)
+                        if (column != null) {
+                            val block = findBlock(
+                                offset = offset,
+                                blockSize = blockSize,
+                                blocks = blocks,
+                                column = column
+                            )
+
+                            if (block != null) {
+                                onBlockClicked(block)
+                            }
                         }
                     },
                     onLongPress = { offset ->
@@ -183,15 +186,18 @@ fun Heatmap(
                             blockSize = blockSize,
                             blocks = blocks
                         )
-                        val block = findBlock(
-                            offset = offset,
-                            blockSize = blockSize,
-                            blocks = blocks,
-                            column = column
-                        )
 
-                        if (column != null && block != null) {
-                            onBlockLongClicked(column, block)
+                        if (column != null) {
+                            val block = findBlock(
+                                offset = offset,
+                                blockSize = blockSize,
+                                blocks = blocks,
+                                column = column
+                            )
+
+                            if (block != null) {
+                                onBlockLongClicked(column, block)
+                            }
                         }
                     }
                 )
@@ -201,18 +207,18 @@ fun Heatmap(
             color = tertiaryContainer
         )
 
-        val size = Size(
+        val blockSize = Size(
             width = size.height / heat.rows,
             height = size.width / heat.columns
         )
 
         for (column in blocks) {
-            val x = column.key.x * size.width
+            val x = column.key.x * blockSize.width
 
             for (block in column.value) {
                 val topLeft = Offset(
                     x = x,
-                    y = block.y * size.height
+                    y = block.y * blockSize.height
                 )
 
                 drawBlock(
@@ -221,7 +227,7 @@ fun Heatmap(
                     border = onTertiaryContainer,
                     background = tertiaryContainer,
                     topLeft = topLeft,
-                    size = size,
+                    size = blockSize,
                     strokeWidth = strokeWidth.toPx()
                 )
             }

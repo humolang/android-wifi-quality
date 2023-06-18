@@ -88,15 +88,15 @@ class PlanningViewModel(
         }
     }
 
-    fun deleteRow(heatId: Long, x: Int) {
+    fun deleteRow(heatId: Long, y: Int) {
         viewModelScope.launch {
-            planningTool.deleteRow(heatId, x)
+            planningTool.deleteRow(heatId, y)
         }
     }
 
-    fun deleteColumn(heatId: Long, y: Int) {
+    fun deleteColumn(heatId: Long, x: Int) {
         viewModelScope.launch {
-            planningTool.deleteColumn(heatId, y)
+            planningTool.deleteColumn(heatId, x)
         }
     }
 
