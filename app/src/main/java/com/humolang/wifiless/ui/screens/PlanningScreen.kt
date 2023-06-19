@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.ArrowBack
 import androidx.compose.material.icons.twotone.Delete
@@ -42,6 +43,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -76,7 +79,7 @@ fun PlanningScreen(
         topBar = {
             PlanningTopBar(
                 heatFlow = planningViewModel.heat,
-                onNameAcceptedClicked = { heat, name ->
+                updateHeatName = { heat, name ->
                     planningViewModel.updateHeatName(heat, name)
                 },
                 popBackStack = popBackStack
@@ -121,16 +124,13 @@ fun PlanningScreen(
 @Composable
 private fun PlanningTopBar(
     heatFlow: StateFlow<Heat>,
-    onNameAcceptedClicked: (Heat, String) -> Unit,
+    updateHeatName: (Heat, String) -> Unit,
     popBackStack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val heat by heatFlow
         .collectAsStateWithLifecycle()
 
-    var heatName by rememberSaveable {
-        mutableStateOf(heat.name)
-    }
     var edited by rememberSaveable {
         mutableStateOf(true)
     }
@@ -154,8 +154,15 @@ private fun PlanningTopBar(
                 )
             } else {
                 TextField(
-                    value = heatName,
-                    onValueChange = { heatName = it},
+                    value = TextFieldValue(
+                        text = heat.name,
+                        selection = TextRange(
+                            heat.name.length
+                        )
+                    ),
+                    onValueChange = {
+                        updateHeatName(heat, it.text)
+                    },
                     label = {
                         Text(
                             text = stringResource(
@@ -164,6 +171,9 @@ private fun PlanningTopBar(
                         )
                     },
                     singleLine = true,
+                    keyboardActions = KeyboardActions(
+                        onDone = { edited = !edited }
+                    ),
                     modifier = Modifier
                         .focusRequester(nameFieldRequester),
                     colors = TextFieldDefaults.colors(
@@ -196,9 +206,7 @@ private fun PlanningTopBar(
         actions = {
             if (edited) {
                 IconButton(
-                    onClick = {
-                        edited = !edited
-                    }
+                    onClick = { edited = !edited }
                 ) {
                     Icon(
                         imageVector = Icons.TwoTone.Edit,
@@ -209,10 +217,7 @@ private fun PlanningTopBar(
                 }
             } else {
                 IconButton(
-                    onClick = {
-                        edited = !edited
-                        onNameAcceptedClicked(heat, heatName)
-                    }
+                    onClick = { edited = !edited }
                 ) {
                     Icon(
                         imageVector = Icons.TwoTone.Done,
