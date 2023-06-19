@@ -56,9 +56,9 @@ class MappingViewModel(
         }
     }
 
-    fun checkRssi(block: Block) {
+    fun checkRssi(heat: Heat, block: Block) {
         viewModelScope.launch {
-            mappingTool.checkRssi(block)
+            mappingTool.checkRssi(heat, block)
         }
     }
 

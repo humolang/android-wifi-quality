@@ -145,8 +145,8 @@ private fun MappingContent(
         MappingField(
             heatFlow = mappingViewModel.heat,
             blocksFlow = mappingViewModel.blocks,
-            onBlockClicked = { block ->
-                mappingViewModel.checkRssi(block)
+            onBlockClicked = { heat, block ->
+                mappingViewModel.checkRssi(heat, block)
             },
             modifier = Modifier
                 .fillMaxSize()
@@ -158,7 +158,7 @@ private fun MappingContent(
 private fun MappingField(
     heatFlow: StateFlow<Heat>,
     blocksFlow: StateFlow<Map<Column, List<Block>>>,
-    onBlockClicked: (Block) -> Unit,
+    onBlockClicked: (Heat, Block) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -175,7 +175,9 @@ private fun MappingField(
             TransformableHeatmap(
                 heat = heat,
                 blocks = blocks,
-                onBlockClicked = onBlockClicked,
+                onBlockClicked = { block ->
+                    onBlockClicked(heat, block)
+                },
                 modifier = Modifier.padding(16.dp)
             )
         }

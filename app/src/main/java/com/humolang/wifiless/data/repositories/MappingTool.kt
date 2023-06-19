@@ -39,7 +39,14 @@ class MappingTool(
             .loadObservableBlocks(heatId)
     }
 
-    suspend fun checkRssi(block: Block) {
+    suspend fun checkRssi(heat: Heat, block: Block) {
+        val timestamp = System.currentTimeMillis()
+        val updated = heat.copy(
+            modificationTimestamp = timestamp
+        )
+
+        heatDao.update(updated)
+
         val rssi = rssiValue.rssi
         val updatedBlock = block.copy(
             rssi = rssi
