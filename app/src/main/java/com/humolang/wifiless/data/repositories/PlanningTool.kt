@@ -125,9 +125,17 @@ class PlanningTool(
     }
 
     suspend fun updateBlockType(
+        heat: Heat,
         block: Block,
         type: BlockType
     ) {
+        val timestamp = System.currentTimeMillis()
+        val updatedHeat = heat.copy(
+            modificationTimestamp = timestamp
+        )
+
+        heatDao.update(updatedHeat)
+
         val updated = block.copy(
             type = type
         )
@@ -139,8 +147,10 @@ class PlanningTool(
         heat: Heat,
         name: String
     ) {
+        val timestamp = System.currentTimeMillis()
         val updated = heat.copy(
-            name = name
+            name = name,
+            modificationTimestamp = timestamp
         )
 
         heatDao.update(updated)
@@ -148,8 +158,10 @@ class PlanningTool(
 
     suspend fun insertRow(heatId: Long, y: Int) {
         val oldHeat = heatDao.loadHeatById(heatId)
+        val timestamp = System.currentTimeMillis()
         val updatedHeat = oldHeat.copy(
-            rows = oldHeat.rows + 1
+            rows = oldHeat.rows + 1,
+            modificationTimestamp = timestamp
         )
         heatDao.update(updatedHeat)
 
@@ -191,8 +203,10 @@ class PlanningTool(
 
     suspend fun insertColumn(heatId: Long, x: Int) {
         val oldHeat = heatDao.loadHeatById(heatId)
+        val timestamp = System.currentTimeMillis()
         val updatedHeat = oldHeat.copy(
-            columns = oldHeat.columns + 1
+            columns = oldHeat.columns + 1,
+            modificationTimestamp = timestamp
         )
         heatDao.update(updatedHeat)
 
@@ -244,8 +258,10 @@ class PlanningTool(
         val oldHeat = heatDao.loadHeatById(heatId)
 
         if (oldHeat.rows > 1) {
+            val timestamp = System.currentTimeMillis()
             val updatedHeat = oldHeat.copy(
-                rows = oldHeat.rows - 1
+                rows = oldHeat.rows - 1,
+                modificationTimestamp = timestamp
             )
             heatDao.update(updatedHeat)
 
@@ -274,8 +290,10 @@ class PlanningTool(
         val oldHeat = heatDao.loadHeatById(heatId)
 
         if (oldHeat.columns > 1) {
+            val timestamp = System.currentTimeMillis()
             val updatedHeat = oldHeat.copy(
-                columns = oldHeat.columns - 1
+                columns = oldHeat.columns - 1,
+                modificationTimestamp = timestamp
             )
             heatDao.update(updatedHeat)
 

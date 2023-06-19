@@ -321,9 +321,9 @@ private fun PlanningContent(
         PlanningField(
             heatFlow = planningViewModel.heat,
             blocksFlow = planningViewModel.blocks,
-            onBlockTypeClicked = { block, type ->
+            onBlockTypeClicked = { heat, block, type ->
                 planningViewModel
-                    .updateBlockType(block, type)
+                    .updateBlockType(heat, block, type)
             },
             onInsertRowClicked = { heatId, y ->
                 planningViewModel
@@ -350,7 +350,7 @@ private fun PlanningContent(
 private fun PlanningField(
     heatFlow: StateFlow<Heat>,
     blocksFlow: StateFlow<Map<Column, List<Block>>>,
-    onBlockTypeClicked: (Block, BlockType) -> Unit,
+    onBlockTypeClicked: (Heat, Block, BlockType) -> Unit,
     onInsertRowClicked: (Long, Int) -> Unit,
     onInsertColumnClicked: (Long, Int) -> Unit,
     onDeleteRowClicked: (Long, Int) -> Unit,
@@ -406,7 +406,9 @@ private fun PlanningField(
             expanded = typeMenuExpanded,
             onDismissRequest = { typeMenuExpanded = false },
             block = selectedBlock,
-            onBlockTypeClicked = onBlockTypeClicked
+            onBlockTypeClicked = { block, blockType ->
+                onBlockTypeClicked(heat, block, blockType)
+            }
         )
 
         EditPlanMenu(

@@ -64,9 +64,9 @@ class PlanningViewModel(
         }
     }
 
-    fun updateBlockType(block: Block, type: BlockType) {
+    fun updateBlockType(heat: Heat, block: Block, type: BlockType) {
         viewModelScope.launch {
-            planningTool.updateBlockType(block, type)
+            planningTool.updateBlockType(heat, block, type)
         }
     }
 
