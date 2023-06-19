@@ -95,17 +95,15 @@ class StartViewModel(
 
     private suspend fun collectLatestRssi() {
         wifiParameters.latestRssi.collect { rssi ->
-            if (isWifiEnabled.value) {
-                if (wifiParameters.minRssi > rssi) {
-                    wifiParameters.updateMinRssi(rssi)
+            if (wifiParameters.minRssi > rssi) {
+                wifiParameters.updateMinRssi(rssi)
 
-                    _rssiGraphState.value = _rssiGraphState.value.copy(
-                        minRssi = wifiParameters.minRssi
-                    )
-                }
-
-                _latestRssi.value = rssi
+                _rssiGraphState.value = _rssiGraphState.value.copy(
+                    minRssi = wifiParameters.minRssi
+                )
             }
+
+            _latestRssi.value = rssi
         }
     }
 
@@ -119,17 +117,15 @@ class StartViewModel(
 
     private suspend fun collectLatestLinkSpeed() {
         wifiParameters.latestLinkSpeed.collect { linkSpeed ->
-            if (isWifiEnabled.value) {
-                if (wifiParameters.maxLinkSpeed < linkSpeed) {
-                    wifiParameters.updateMaxLinkSpeed(linkSpeed)
+            if (wifiParameters.maxLinkSpeed < linkSpeed) {
+                wifiParameters.updateMaxLinkSpeed(linkSpeed)
 
-                    _linkSpeedGraphState.value = _linkSpeedGraphState.value.copy(
-                        maxLinkSpeed = wifiParameters.maxLinkSpeed
-                    )
-                }
-
-                _latestLinkSpeed.value = linkSpeed
+                _linkSpeedGraphState.value = _linkSpeedGraphState.value.copy(
+                    maxLinkSpeed = wifiParameters.maxLinkSpeed
+                )
             }
+
+            _latestLinkSpeed.value = linkSpeed
         }
     }
 
@@ -143,10 +139,10 @@ class StartViewModel(
 
     private suspend fun collectWifiCapabilities() {
         wifiParameters.wifiCapabilities.collect { capabilities ->
-            _wifiCapabilities.value = capabilities
-
             _isWifiEnabled.value = capabilities
                 .isWifiEnabled
+
+            _wifiCapabilities.value = capabilities
         }
     }
 

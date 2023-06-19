@@ -76,7 +76,7 @@
     <string name="ipv4_address">IPv4 Address</string>
     <string name="ipv6_address">IPv6 Address</string>
 
-    <string name="security_type_unknown">Unknown</string>
+    <string name="unknown">Unknown</string>
     <string name="security_type_open">For an open network</string>
     <string name="security_type_wep">For a WEP network</string>
     <string name="security_type_psk">For a PSK network</string>
@@ -92,7 +92,6 @@
     <string name="security_type_passpoint_r3">For a Passpoint R3 network</string>
     <string name="security_type_dpp">For Easy Connect (DPP) network</string>
 
-    <string name="wifi_standard_unknown">Wi-Fi unknown standard</string>
     <string name="wifi_standard_legacy" translatable="false">Wi-Fi 802.11a/b/g</string>
     <string name="wifi_standard_11n" translatable="false">Wi-Fi 802.11n</string>
     <string name="wifi_standard_11ac" translatable="false">Wi-Fi 802.11ac</string>

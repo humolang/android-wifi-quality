@@ -45,6 +45,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.humolang.wifiless.R
 import com.humolang.wifiless.data.datasources.DEFAULT_HEAT_ID
 import com.humolang.wifiless.data.datasources.UNKNOWN
+import com.humolang.wifiless.data.datasources.UNKNOWN_LINK_SPEED
+import com.humolang.wifiless.data.datasources.UNKNOWN_RSSI
 import com.humolang.wifiless.data.datasources.model.WifiCapabilities
 import com.humolang.wifiless.data.datasources.model.WifiProperties
 import com.humolang.wifiless.ui.screens.components.GraphDrawer
@@ -228,10 +230,14 @@ private fun RssiGraph(
                     .collectAsStateWithLifecycle()
 
                 Text(
-                    text = stringResource(
-                        id = R.string.rssi_dbm,
-                        rssi
-                    ),
+                    text = if (rssi != UNKNOWN_RSSI) {
+                        stringResource(
+                            id = R.string.rssi_dbm,
+                            rssi
+                        )
+                    } else {
+                        stringResource(id = R.string.unknown)
+                    },
                     modifier = Modifier,
                     style = MaterialTheme.typography.titleLarge
                 )
@@ -311,11 +317,15 @@ private fun LinkSpeedGraph(
                     .collectAsStateWithLifecycle()
 
                 Text(
-                    text = stringResource(
-                        id = R.string.link_speed_value,
-                        linkSpeed,
-                        linkSpeedUnits
-                    ),
+                    text = if (linkSpeed != UNKNOWN_LINK_SPEED) {
+                        stringResource(
+                            id = R.string.link_speed_value,
+                            linkSpeed,
+                            linkSpeedUnits
+                        )
+                    } else {
+                        stringResource(id = R.string.unknown)
+                    },
                     modifier = Modifier,
                     style = MaterialTheme.typography.titleLarge
                 )

@@ -67,7 +67,7 @@ data class WifiCapabilities(
                 WifiInfo.SECURITY_TYPE_DPP ->
                     R.string.security_type_dpp
 
-                else -> R.string.security_type_unknown
+                else -> R.string.unknown
             }
 
             return id
@@ -94,7 +94,7 @@ data class WifiCapabilities(
                 ScanResult.WIFI_STANDARD_11BE ->
                     R.string.wifi_standard_11be
 
-                else -> R.string.wifi_standard_unknown
+                else -> R.string.unknown
             }
 
             return id

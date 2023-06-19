@@ -55,7 +55,7 @@
     <string name="interface_name">Интерфейс</string>
     <string name="ipv4_address">IPv4 адрес</string>
     <string name="ipv6_address">IPv6 адрес</string>
-    <string name="security_type_unknown">Неизвестный</string>
+    <string name="unknown">Неизвестно</string>
     <string name="security_type_open">Для открытой сети</string>
     <string name="security_type_wep">Для сети WEP</string>
     <string name="security_type_psk">Для сети PSK</string>
@@ -70,7 +70,6 @@
     <string name="security_type_passpoint_r1_r2">Для сети Passpoint R1/R2</string>
     <string name="security_type_passpoint_r3">Для сети Passpoint R3</string>
     <string name="security_type_dpp">Для сети Easy Connect (DPP)</string>
-    <string name="wifi_standard_unknown">Неизвестный Wi-Fi стандарт</string>
     <string name="supported5ghz">5 ГГц</string>
     <string name="supported6ghz">6 ГГц</string>
     <string name="supported60ghz">60 ГГц</string>
