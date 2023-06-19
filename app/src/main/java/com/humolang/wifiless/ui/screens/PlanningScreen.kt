@@ -154,14 +154,9 @@ private fun PlanningTopBar(
                 )
             } else {
                 TextField(
-                    value = TextFieldValue(
-                        text = heat.name,
-                        selection = TextRange(
-                            heat.name.length
-                        )
-                    ),
+                    value = heat.name,
                     onValueChange = {
-                        updateHeatName(heat, it.text)
+                        updateHeatName(heat, it)
                     },
                     label = {
                         Text(
