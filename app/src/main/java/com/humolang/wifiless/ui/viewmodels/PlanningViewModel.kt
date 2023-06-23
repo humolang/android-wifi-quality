@@ -33,6 +33,25 @@ class PlanningViewModel(
     val blocks: StateFlow<Map<Column, List<Block>>>
         get() = _blocks.asStateFlow()
 
+    suspend fun loadHeatmap(heatId: Long): Long {
+        val id = if (heatId == DEFAULT_HEAT_ID) {
+            planningTool
+                .initialHeatmap()
+        } else {
+            heatId
+        }
+
+        planningTool.loadHeat(id)
+        planningTool.loadBlocks(id)
+
+        viewModelScope.launch {
+            launch { collectHeat() }
+            launch { collectBlocks() }
+        }
+
+        return id
+    }
+
     private suspend fun collectHeat() {
         planningTool.heat.collect { heat ->
             _heat.value = heat
@@ -45,61 +64,39 @@ class PlanningViewModel(
         }
     }
 
-    fun loadHeatmap(heatId: Long) {
+    fun updateBlockType(heat: Heat, block: Block, type: BlockType) {
         viewModelScope.launch {
-            val id = if (heatId == DEFAULT_HEAT_ID) {
-                planningTool.initialHeat()
-            } else {
-                heatId
-            }
-
-            planningTool.loadHeat(id)
-            planningTool.loadBlocks(id)
-
-            launch { collectHeat() }
-            launch { collectBlocks() }
+            planningTool.updateBlockType(heat, block, type)
         }
     }
 
-    fun updateBlockType(
-        block: Block,
-        type: BlockType
-    ) {
-        viewModelScope.launch {
-            planningTool.updateBlockType(block, type)
-        }
-    }
-
-    fun updateHeatName(
-        heat: Heat,
-        name: String
-    ) {
+    fun updateHeatName(heat: Heat, name: String) {
         viewModelScope.launch {
             planningTool.updateHeatName(heat, name)
         }
     }
 
-    fun insertTopRow(heatId: Long) {
+    fun insertRow(heatId: Long, y: Int) {
         viewModelScope.launch {
-            planningTool.insertTopRow(heatId)
+            planningTool.insertRow(heatId, y)
         }
     }
 
-    fun insertBottomRow(heatId: Long) {
+    fun insertColumn(heatId: Long, x: Int) {
         viewModelScope.launch {
-            planningTool.insertBottomRow(heatId)
+            planningTool.insertColumn(heatId, x)
         }
     }
 
-    fun insertRightColumn(heatId: Long) {
+    fun deleteRow(heatId: Long, y: Int) {
         viewModelScope.launch {
-            planningTool.insertRightColumn(heatId)
+            planningTool.deleteRow(heatId, y)
         }
     }
 
-    fun insertLeftColumn(heatId: Long) {
+    fun deleteColumn(heatId: Long, x: Int) {
         viewModelScope.launch {
-            planningTool.insertLeftColumn(heatId)
+            planningTool.deleteColumn(heatId, x)
         }
     }
 

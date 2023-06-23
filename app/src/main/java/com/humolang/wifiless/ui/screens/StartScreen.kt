@@ -1,13 +1,9 @@
 package com.humolang.wifiless.ui.screens
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -15,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.KeyboardArrowDown
 import androidx.compose.material.icons.twotone.KeyboardArrowUp
+import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ElevatedButton
@@ -23,41 +20,36 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.humolang.wifiless.R
 import com.humolang.wifiless.data.datasources.DEFAULT_HEAT_ID
+import com.humolang.wifiless.data.datasources.UNKNOWN
+import com.humolang.wifiless.data.datasources.UNKNOWN_LINK_SPEED
+import com.humolang.wifiless.data.datasources.UNKNOWN_RSSI
 import com.humolang.wifiless.data.datasources.model.WifiCapabilities
 import com.humolang.wifiless.data.datasources.model.WifiProperties
+import com.humolang.wifiless.ui.screens.components.GraphDrawer
 import com.humolang.wifiless.ui.states.LinkSpeedGraphState
 import com.humolang.wifiless.ui.states.RssiGraphState
 import com.humolang.wifiless.ui.viewmodels.StartViewModel
@@ -66,6 +58,7 @@ import kotlinx.coroutines.flow.StateFlow
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StartScreen(
+    navigateToSettings: () -> Unit,
     navigateToPlanning: (Long) -> Unit,
     navigateToHeats: () -> Unit,
     startViewModel: StartViewModel =
@@ -74,12 +67,39 @@ fun StartScreen(
     val scrollBehavior = TopAppBarDefaults
         .pinnedScrollBehavior()
 
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
+
+    val isWifiEnabled by startViewModel
+        .isWifiEnabled.collectAsStateWithLifecycle()
+
+    if (!isWifiEnabled) {
+        val message = stringResource(
+            id = R.string.wifi_is_off
+        )
+
+        LaunchedEffect(key1 = isWifiEnabled) {
+            snackbarHostState.showSnackbar(
+                message = message
+            )
+        }
+    }
+
     Scaffold(
         modifier = Modifier
             .nestedScroll(
                 scrollBehavior.nestedScrollConnection
             ),
-        topBar = { StartTopBar(scrollBehavior) },
+        topBar = {
+            StartTopBar(
+                navigateToSettings = navigateToSettings,
+                scrollBehavior = scrollBehavior
+            )
+        },
+        snackbarHost = {
+            SnackbarHost(snackbarHostState)
+        },
         content = { innerPadding ->
             StartContent(
                 navigateToPlanning = navigateToPlanning,
@@ -96,6 +116,7 @@ fun StartScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun StartTopBar(
+    navigateToSettings: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
     modifier: Modifier = Modifier
 ) {
@@ -114,22 +135,18 @@ private fun StartTopBar(
                 )
             }
         },
-//        navigationIcon = {
-//            IconButton(onClick = { /* doSomething() */ }) {
-//                Icon(
-//                    imageVector = Icons.TwoTone.Menu,
-//                    contentDescription = stringResource(id = R.string.menu)
-//                )
-//            }
-//        },
-//        actions = {
-//            IconButton(onClick = { /* doSomething() */ }) {
-//                Icon(
-//                    imageVector = Icons.TwoTone.MoreVert,
-//                    contentDescription = stringResource(id = R.string.menu)
-//                )
-//            }
-//        },
+        actions = {
+            IconButton(
+                onClick = navigateToSettings
+            ) {
+                Icon(
+                    imageVector = Icons.TwoTone.Settings,
+                    contentDescription = stringResource(
+                        id = R.string.settings
+                    )
+                )
+            }
+        },
         scrollBehavior = scrollBehavior,
         modifier = modifier
     )
@@ -143,6 +160,7 @@ private fun StartContent(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.padding(16.dp)) {
+
         RssiGraph(
             dequeCapacity = startViewModel.dequeCapacity,
             rssiGraphState = startViewModel.rssiGraphState,
@@ -196,7 +214,7 @@ private fun RssiGraph(
         modifier = modifier
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            var expanded by remember {
+            var expanded by rememberSaveable {
                 mutableStateOf(true)
             }
 
@@ -212,10 +230,14 @@ private fun RssiGraph(
                     .collectAsStateWithLifecycle()
 
                 Text(
-                    text = stringResource(
-                        id = R.string.rssi_dbm,
-                        rssi
-                    ),
+                    text = if (rssi != UNKNOWN_RSSI) {
+                        stringResource(
+                            id = R.string.rssi_dbm,
+                            rssi
+                        )
+                    } else {
+                        stringResource(id = R.string.unknown)
+                    },
                     modifier = Modifier,
                     style = MaterialTheme.typography.titleLarge
                 )
@@ -246,14 +268,17 @@ private fun RssiGraph(
                 val graphState by rssiGraphState
                     .collectAsStateWithLifecycle()
 
+                val points by rssiValues
+                    .collectAsStateWithLifecycle()
+
                 GraphDrawer(
-                    pointsFlow = rssiValues,
-                    dequeCapacity = dequeCapacity,
-                    horizontalCapacity = graphState.rssiHorizontalCapacity,
-                    verticalCapacity = graphState.minRssi,
+                    points = points,
+                    pointsCapacity = dequeCapacity,
+                    horizontalLimit = graphState.rssiHorizontalCapacity,
+                    verticalLimit = graphState.minRssi,
+                    isPositive = false,
                     labelX = stringResource(id = R.string.label_x_time),
                     labelY = stringResource(id = R.string.label_y_rssi),
-                    valueAxisAsc = false,
                     modifier = Modifier
                         .padding(top = 8.dp)
                         .aspectRatio(3 / 2f)
@@ -276,7 +301,7 @@ private fun LinkSpeedGraph(
         modifier = modifier
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            var expanded by remember {
+            var expanded by rememberSaveable {
                 mutableStateOf(false)
             }
 
@@ -292,11 +317,15 @@ private fun LinkSpeedGraph(
                     .collectAsStateWithLifecycle()
 
                 Text(
-                    text = stringResource(
-                        id = R.string.link_speed_value,
-                        linkSpeed,
-                        linkSpeedUnits
-                    ),
+                    text = if (linkSpeed != UNKNOWN_LINK_SPEED) {
+                        stringResource(
+                            id = R.string.link_speed_value,
+                            linkSpeed,
+                            linkSpeedUnits
+                        )
+                    } else {
+                        stringResource(id = R.string.unknown)
+                    },
                     modifier = Modifier,
                     style = MaterialTheme.typography.titleLarge
                 )
@@ -327,17 +356,20 @@ private fun LinkSpeedGraph(
                 val graphState by linkSpeedGraphState
                     .collectAsStateWithLifecycle()
 
+                val points by linkSpeedValues
+                    .collectAsStateWithLifecycle()
+
                 GraphDrawer(
-                    pointsFlow = linkSpeedValues,
-                    dequeCapacity = dequeCapacity,
-                    horizontalCapacity = graphState.linkSpeedHorizontalCapacity,
-                    verticalCapacity = graphState.maxLinkSpeed,
+                    points = points,
+                    pointsCapacity = dequeCapacity,
+                    horizontalLimit = graphState.linkSpeedHorizontalCapacity,
+                    verticalLimit = graphState.maxLinkSpeed,
+                    isPositive = true,
                     labelX = stringResource(id = R.string.label_x_time),
                     labelY = stringResource(
-                        id = R.string.label_y_speed,
+                        id = R.string.label_y_link_speed,
                         linkSpeedUnits
                     ),
-                    valueAxisAsc = true,
                     modifier = Modifier
                         .padding(top = 8.dp)
                         .aspectRatio(3 / 2f)
@@ -345,335 +377,6 @@ private fun LinkSpeedGraph(
             }
         }
     }
-}
-
-@OptIn(ExperimentalTextApi::class)
-@Composable
-private fun GraphDrawer(
-    pointsFlow: StateFlow<ArrayDeque<Int>>,
-    dequeCapacity: Int,
-    horizontalCapacity: Int,
-    verticalCapacity: Int,
-    labelX: String,
-    labelY: String,
-    valueAxisAsc: Boolean,
-    modifier: Modifier = Modifier
-) {
-    val backgroundColor = MaterialTheme.colorScheme
-        .tertiaryContainer
-
-    Box(
-        modifier = modifier
-            .background(
-                color = backgroundColor,
-                shape = MaterialTheme.shapes.small
-            )
-    ) {
-        val lineColor = MaterialTheme.colorScheme
-            .tertiary
-            .copy(alpha = 0.4f)
-        val graphColor = MaterialTheme.colorScheme
-            .onTertiaryContainer
-            .copy(alpha = 0.6f)
-
-        val textMeasurer = rememberTextMeasurer()
-        val textStyle = MaterialTheme.typography
-            .labelSmall
-
-        val points by pointsFlow
-            .collectAsStateWithLifecycle()
-
-        Canvas(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxSize()
-                .drawWithCache {
-                    val graphWidthPx = 2.dp.toPx()
-                    val graph = createGraph(
-                        points = points,
-                        dequeCapacity = dequeCapacity,
-                        verticalCapacity = verticalCapacity,
-                        valueAxisAsc = valueAxisAsc,
-                        canvasSize = size
-                    )
-
-                    onDrawBehind {
-                        drawPath(
-                            path = graph,
-                            color = graphColor,
-                            style = Stroke(
-                                width = graphWidthPx,
-                                cap = StrokeCap.Round,
-                                join = StrokeJoin.Round
-                            )
-                        )
-                    }
-                }
-        ) {
-            val lineWidthPx = 1.dp.toPx()
-            val textXOffsetPx = 2.dp.toPx()
-
-            drawRect(
-                color = lineColor,
-                style = Stroke(lineWidthPx)
-            )
-
-            drawHorizontalsWithLabels(
-                verticalCapacity = verticalCapacity,
-                lineColor = lineColor,
-                lineWidthPx = lineWidthPx,
-                textMeasurer = textMeasurer,
-                textXOffsetPx = textXOffsetPx,
-                textStyle = textStyle,
-                valueAxisAsc = valueAxisAsc
-            )
-
-            drawVerticalsWithLabels(
-                horizontalCapacity = horizontalCapacity,
-                lineColor = lineColor,
-                lineWidthPx = lineWidthPx,
-                textMeasurer = textMeasurer,
-                textXOffsetPx = textXOffsetPx,
-                textStyle = textStyle,
-                valueAxisAsc = valueAxisAsc
-            )
-
-            if (valueAxisAsc) {
-                drawSingleLabelsAsc(
-                    textMeasurer = textMeasurer,
-                    textXOffsetPx = textXOffsetPx,
-                    textStyle = textStyle,
-                    labelX = labelX,
-                    labelY = labelY
-                )
-            } else {
-                drawSingleLabelsDesc(
-                    textMeasurer = textMeasurer,
-                    textXOffsetPx = textXOffsetPx,
-                    textStyle = textStyle,
-                    labelX = labelX,
-                    labelY = labelY
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalTextApi::class)
-private fun DrawScope.drawHorizontalsWithLabels(
-    verticalCapacity: Int,
-    lineColor: Color,
-    lineWidthPx: Float,
-    textMeasurer: TextMeasurer,
-    textXOffsetPx: Float,
-    textStyle: TextStyle,
-    valueAxisAsc: Boolean
-) {
-    val horizontals = if (size.width > size.height) {
-        size.width / size.height
-    } else {
-        size.height / size.width
-    }.toInt() * 3
-
-    val horizontalsInterval = size.height / (horizontals + 1)
-    val valueInterval = verticalCapacity / (horizontals + 1)
-
-    repeat(horizontals) { number ->
-        val y = horizontalsInterval * (number + 1)
-
-        drawLine(
-            color = lineColor,
-            start = Offset(0f, y),
-            end = Offset(size.width, y),
-            strokeWidth = lineWidthPx
-        )
-
-        val text = if (valueAxisAsc) {
-            valueInterval * (horizontals - number)
-        } else {
-            valueInterval * (number + 1)
-        }.toString()
-
-        drawText(
-            textMeasurer = textMeasurer,
-            text = text,
-            topLeft = Offset(0f + textXOffsetPx, y),
-            style = textStyle
-        )
-    }
-}
-
-@OptIn(ExperimentalTextApi::class)
-private fun DrawScope.drawVerticalsWithLabels(
-    horizontalCapacity: Int,
-    lineColor: Color,
-    lineWidthPx: Float,
-    textMeasurer: TextMeasurer,
-    textXOffsetPx: Float,
-    textStyle: TextStyle,
-    valueAxisAsc: Boolean
-) {
-    val verticals = if (size.width > size.height) {
-        size.width / size.height
-    } else {
-        size.height / size.width
-    }.toInt() * 4
-
-    val verticalsInterval = size.width / (verticals + 1)
-    val timeInterval = horizontalCapacity / (verticals + 1)
-
-    repeat(verticals) { number ->
-        val x = verticalsInterval * (number + 1)
-
-        drawLine(
-            color = lineColor,
-            start = Offset(x, 0f),
-            end = Offset(x, size.height),
-            strokeWidth = lineWidthPx
-        )
-
-        val text = (timeInterval * (number + 1))
-            .toString()
-
-        val y = if (valueAxisAsc) {
-            val labelHeight = textMeasurer
-                .measure(text, textStyle).size.height
-            size.height - labelHeight
-        } else {
-            0f
-        }
-
-        drawText(
-            textMeasurer = textMeasurer,
-            text = text,
-            topLeft = Offset(
-                x = x + textXOffsetPx,
-                y = y
-            ),
-            style = textStyle
-        )
-    }
-}
-
-@OptIn(ExperimentalTextApi::class)
-private fun DrawScope.drawSingleLabelsAsc(
-    textMeasurer: TextMeasurer,
-    textXOffsetPx: Float,
-    textStyle: TextStyle,
-    labelX: String,
-    labelY: String
-) {
-    val labelZero = "0"
-    val labelZeroHeight = textMeasurer
-        .measure(labelZero, textStyle).size.height
-
-    drawText(
-        textMeasurer = textMeasurer,
-        text = labelZero,
-        topLeft = Offset(
-            0f + textXOffsetPx,
-            size.height - labelZeroHeight
-        ),
-        style = textStyle
-    )
-
-    val labelXWidth = textMeasurer
-        .measure(labelX, textStyle).size.width
-    val labelXHeight = textMeasurer
-        .measure(labelX, textStyle).size.height
-
-    drawText(
-        textMeasurer = textMeasurer,
-        text = labelX,
-        topLeft = Offset(
-            x = size.width - labelXWidth - textXOffsetPx,
-            y = size.height - labelXHeight
-        ),
-        style = textStyle
-    )
-
-    drawText(
-        textMeasurer = textMeasurer,
-        text = labelY,
-        topLeft = Offset(
-            x = 0f + textXOffsetPx,
-            y = 0f
-        ),
-        style = textStyle
-    )
-}
-
-@OptIn(ExperimentalTextApi::class)
-private fun DrawScope.drawSingleLabelsDesc(
-    textMeasurer: TextMeasurer,
-    textXOffsetPx: Float,
-    textStyle: TextStyle,
-    labelX: String,
-    labelY: String
-) {
-    drawText(
-        textMeasurer = textMeasurer,
-        text = "0",
-        topLeft = Offset(0f + textXOffsetPx, 0f),
-        style = textStyle
-    )
-
-    val labelXWidth = textMeasurer
-        .measure(labelX, textStyle).size.width
-
-    drawText(
-        textMeasurer = textMeasurer,
-        text = labelX,
-        topLeft = Offset(
-            x = size.width - labelXWidth,
-            y = 0f
-        ),
-        style = textStyle
-    )
-
-    val labelYHeight = textMeasurer
-        .measure(labelY, textStyle).size.height
-
-    drawText(
-        textMeasurer = textMeasurer,
-        text = labelY,
-        topLeft = Offset(
-            x = 0f + textXOffsetPx,
-            y = size.height - labelYHeight
-        ),
-        style = textStyle
-    )
-}
-
-private fun createGraph(
-    points: ArrayDeque<Int>,
-    dequeCapacity: Int,
-    verticalCapacity: Int,
-    valueAxisAsc: Boolean,
-    canvasSize: Size
-): Path {
-    val graph = Path()
-
-    points.forEachIndexed { index, point ->
-        val x = canvasSize.width *
-                ((index + 1).toFloat() / dequeCapacity)
-
-        val y = if (valueAxisAsc) {
-            canvasSize.height *
-                    ((verticalCapacity - point).toFloat() / verticalCapacity)
-        } else {
-            canvasSize.height *
-                    (point.toFloat() / verticalCapacity)
-        }
-
-        if (index == 0) {
-            graph.moveTo(0f, y)
-        } else {
-            graph.lineTo(x, y)
-        }
-    }
-
-    return graph
 }
 
 @Composable
@@ -753,7 +456,7 @@ private fun WifiCapabilities(
 ) {
     Card(modifier = modifier) {
         Column(modifier = Modifier.padding(16.dp)) {
-            var expanded by remember {
+            var expanded by rememberSaveable {
                 mutableStateOf(true)
             }
 
@@ -789,192 +492,132 @@ private fun WifiCapabilities(
                 Column(
                     modifier = Modifier.padding(top = 8.dp)
                 ) {
-                    val textStyle = MaterialTheme.typography.bodyLarge
+                    val textStyle = MaterialTheme
+                        .typography
+                        .bodyLarge
 
                     val capabilities by wifiCapabilities
                         .collectAsStateWithLifecycle()
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.wifi_standard
+                        ),
+                        infoText = stringResource(
+                            capabilities.wifiStandardStringId
+                        ),
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.wifi_standard
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                capabilities.wifiStandardStringId
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.security_type
+                        ),
+                        infoText = stringResource(
+                            id = capabilities.securityTypeStringId
+                        ),
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.security_type
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                id = capabilities.securityTypeStringId
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.frequency
+                        ),
+                        infoText = stringResource(
+                            id = R.string.frequency_value,
+                            capabilities.frequency,
+                            capabilities.frequencyUnits
+                        ),
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.frequency),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                id = R.string.frequency_value,
-                                capabilities.frequency,
-                                capabilities.frequencyUnits
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.supported_frequencies
+                        ),
+                        infoText = supportedFrequencies(capabilities),
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.downstream_bandwidth),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                id = R.string.bandwidth_kbps,
-                                capabilities.downstreamBandwidthKbps
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.downstream_bandwidth
+                        ),
+                        infoText = stringResource(
+                            id = R.string.bandwidth_kbps,
+                            capabilities.downstreamBandwidthKbps
+                        ),
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.upstream_bandwidth),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                id = R.string.bandwidth_kbps,
-                                capabilities.upstreamBandwidthKbps
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.upstream_bandwidth
+                        ),
+                        infoText = stringResource(
+                            id = R.string.bandwidth_kbps,
+                            capabilities.upstreamBandwidthKbps
+                        ),
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.has_hidden_ssid
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = stringResource(
-                                id = if (capabilities.hasHiddenSsid)
-                                    R.string.yes_string
-                                else R.string.no_string
-                            ),
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.ssid
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = capabilities.ssid,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.bssid),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = capabilities.bssid,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
                 }
             }
         }
     }
+}
+
+@Composable
+private fun supportedFrequencies(
+    capabilities: WifiCapabilities
+): String {
+    var supportedFrequencies = UNKNOWN
+
+    if (capabilities.is24GHzSupported) {
+        supportedFrequencies = stringResource(
+            id = R.string.supported24ghz
+        )
+    }
+    if (capabilities.is5GHzSupported) {
+        supportedFrequencies = if (supportedFrequencies != UNKNOWN) {
+            "$supportedFrequencies / ${stringResource(
+                id = R.string.supported5ghz
+            )}"
+        } else {
+            stringResource(
+                id = R.string.supported5ghz
+            )
+        }
+    }
+    if (capabilities.is6GHzSupported) {
+        supportedFrequencies = if (supportedFrequencies != UNKNOWN) {
+            "$supportedFrequencies / ${stringResource(
+                id = R.string.supported6ghz
+            )}"
+        } else {
+            stringResource(
+                id = R.string.supported6ghz
+            )
+        }
+    }
+    if (capabilities.is60GHzSupported) {
+        supportedFrequencies = if (supportedFrequencies != UNKNOWN) {
+            "$supportedFrequencies / ${stringResource(
+                id = R.string.supported60ghz
+            )}"
+        } else {
+            stringResource(
+                id = R.string.supported60ghz
+            )
+        }
+    }
+
+    return supportedFrequencies
 }
 
 @Composable
@@ -984,7 +627,7 @@ private fun WifiProperties(
 ) {
     Card(modifier = modifier) {
         Column(modifier = Modifier.padding(16.dp)) {
-            var expanded by remember {
+            var expanded by rememberSaveable {
                 mutableStateOf(true)
             }
 
@@ -1020,145 +663,86 @@ private fun WifiProperties(
                 Column(
                     modifier = Modifier.padding(top = 8.dp)
                 ) {
-                    val textStyle = MaterialTheme.typography.bodyLarge
+                    val textStyle = MaterialTheme
+                        .typography
+                        .bodyLarge
 
                     val properties by wifiProperties
                         .collectAsStateWithLifecycle()
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.ipv4_address
+                        ),
+                        infoText = properties.ipv4Address,
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.ip_address
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = properties.ipAddress,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.ipv6_address
+                        ),
+                        infoText = properties.ipv6Address,
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.nat64_prefix
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = properties.nat64Prefix,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.interface_name
+                        ),
+                        infoText = properties.interfaceName,
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.interface_name
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = properties.interfaceName,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.dhcp_server_address
+                        ),
+                        infoText = properties.dhcpServer,
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.dhcp_server_address
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = properties.dhcpServer,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
 
-                    Row(
+                    InfoRow(
+                        labelText = stringResource(
+                            id = R.string.dns_server
+                        ),
+                        infoText = properties.dnsServer,
+                        textStyle = textStyle,
                         modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.dns_servers
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Column(
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f)
-                        ) {
-                            for (server in properties.dnsServers) {
-                                Text(
-                                    text = server,
-                                    modifier = Modifier
-                                        .padding(top = 4.dp),
-                                    style = textStyle
-                                )
-                            }
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                id = R.string.http_proxy
-                            ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                        Text(
-                            text = properties.httpProxy,
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .weight(1f),
-                            style = textStyle
-                        )
-                    }
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun InfoRow(
+    labelText: String,
+    infoText: String,
+    textStyle: TextStyle,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+    ) {
+        Text(
+            text = labelText,
+            modifier = Modifier
+                .padding(end = 8.dp)
+                .weight(1f),
+            style = textStyle
+        )
+        Text(
+            text = infoText,
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .weight(1f),
+            style = textStyle
+        )
     }
 }

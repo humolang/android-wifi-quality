@@ -1,22 +1,19 @@
 package com.humolang.wifiless.ui.screens
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.Add
 import androidx.compose.material.icons.twotone.ArrowBack
@@ -43,18 +40,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -65,10 +55,9 @@ import com.humolang.wifiless.data.datasources.DEFAULT_HEAT_ID
 import com.humolang.wifiless.data.datasources.db.entities.Block
 import com.humolang.wifiless.data.datasources.db.entities.Column
 import com.humolang.wifiless.data.datasources.db.entities.Heat
-import com.humolang.wifiless.data.datasources.model.BlockType
+import com.humolang.wifiless.ui.screens.components.Heatmap
 import com.humolang.wifiless.ui.viewmodels.HeatsViewModel
 import kotlinx.coroutines.flow.Flow
-import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -156,18 +145,7 @@ private fun HeatsTopBar(
                 )
             }
         },
-        actions = {
-//            IconButton(
-//                onClick = { /* doSomething() */ }
-//            ) {
-//                Icon(
-//                    imageVector = Icons.TwoTone.MoreVert,
-//                    contentDescription = stringResource(
-//                        id = R.string.menu
-//                    )
-//                )
-//            }
-        },
+        actions = {  },
         scrollBehavior = scrollBehavior
     )
 }
@@ -221,7 +199,7 @@ private fun HeatItem(
     modifier: Modifier = Modifier
 ) {
 
-    var cardExpanded by remember {
+    var cardExpanded by rememberSaveable {
         mutableStateOf(false)
     }
     var menuOpened by remember {
@@ -272,7 +250,7 @@ private fun HeatItem(
                     Icon(
                         Icons.TwoTone.MoreVert,
                         contentDescription = stringResource(
-                            id = R.string.heatmap_options
+                            id = R.string.options
                         )
                     )
                 }
@@ -312,6 +290,7 @@ private fun HeatItem(
                     heat = heat,
                     blocks = blocks,
                     modifier = Modifier
+                        .height(256.dp)
                         .align(Alignment.CenterHorizontally)
                         .padding(top = 8.dp)
                 )
@@ -361,230 +340,6 @@ private fun HeatItem(
                     contentDescription = null
                 )
             }
-        )
-    }
-}
-
-@Composable
-private fun Heatmap(
-    heat: Heat,
-    blocks: Map<Column, List<Block>>,
-    modifier: Modifier = Modifier
-) {
-    val ratioValue = heat.columns.toFloat() / heat.rows
-
-    Row(
-        modifier = modifier
-            .aspectRatio(ratioValue)
-    ) {
-        for (column in blocks) {
-
-            Column(modifier = Modifier.weight(1f)) {
-                for (block in column.value) {
-
-                    Block(
-                        block = block,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f)
-                            .padding(1.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun Block(
-    block: Block,
-    modifier: Modifier = Modifier
-) {
-    val tertiaryBorder = MaterialTheme.colorScheme.onTertiaryContainer
-    val tertiaryRectangle = MaterialTheme.colorScheme.tertiaryContainer
-
-    val hasRssi = abs(block.rssi) in 0..100
-    val rssiGreen = abs(block.rssi.toFloat()) / 100
-
-    val borderColor = Color(
-        tertiaryBorder.red,
-        if (hasRssi) rssiGreen else tertiaryBorder.green,
-        tertiaryBorder.blue,
-        tertiaryBorder.alpha,
-        tertiaryBorder.colorSpace
-    )
-
-    val rectangleColor = Color(
-        tertiaryRectangle.red,
-        if (hasRssi) rssiGreen else tertiaryRectangle.green,
-        tertiaryRectangle.blue,
-        tertiaryRectangle.alpha,
-        tertiaryRectangle.colorSpace
-    )
-
-    when (block.type) {
-
-        BlockType.WALL -> {
-            BlockDrawer(
-                borderColor = borderColor,
-                drawBlock = {
-                    drawWallBlock(
-                        rectangleColor = rectangleColor,
-                        lineColor = borderColor,
-                        cornerRadius = CornerRadius(
-                            4.dp.toPx(),
-                            4.dp.toPx()
-                        ),
-                        size = size
-                    )
-                },
-                modifier = modifier
-            )
-        }
-
-        BlockType.FREE -> {
-            BlockDrawer(
-                borderColor = borderColor,
-                drawBlock = {
-                    drawFreeBlock(
-                        rectangleColor = rectangleColor,
-                        cornerRadius = CornerRadius(
-                            4.dp.toPx(),
-                            4.dp.toPx()
-                        )
-                    )
-                },
-                modifier = modifier
-            )
-        }
-
-        else -> {
-            Icon(
-                painter = painterResource(id = block.imageId),
-                contentDescription = null,
-                modifier = modifier
-                    .border(
-                        2.dp,
-                        borderColor,
-                        RoundedCornerShape(4.dp)
-                    )
-                    .padding(2.dp)
-                    .drawBehind {
-                        drawFreeBlock(
-                            rectangleColor = rectangleColor,
-                            cornerRadius = CornerRadius(
-                                4.dp.toPx(),
-                                4.dp.toPx()
-                            )
-                        )
-                    }
-            )
-        }
-    }
-}
-
-@Composable
-private fun BlockDrawer(
-    borderColor: Color,
-    drawBlock: DrawScope.() -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Canvas(
-        modifier = modifier
-            .border(
-                2.dp,
-                borderColor,
-                RoundedCornerShape(4.dp)
-            )
-            .padding(2.dp)
-    ) {
-        drawBlock()
-    }
-}
-
-private fun DrawScope.drawFreeBlock(
-    rectangleColor: Color,
-    cornerRadius: CornerRadius
-) {
-    drawRoundRect(
-        color = rectangleColor,
-        cornerRadius = cornerRadius
-    )
-}
-
-private fun DrawScope.drawWallBlock(
-    rectangleColor: Color,
-    lineColor: Color,
-    cornerRadius: CornerRadius,
-    size: Size
-) {
-    drawRoundRect(
-        color = rectangleColor,
-        cornerRadius = cornerRadius
-    )
-
-    val lineWidth = 2.dp.toPx()
-
-    val times = 6
-
-    val intervalX = size.width / times
-    val intervalY = size.height / times
-
-    repeat(times) { number ->
-        drawLine(
-            color = lineColor,
-            start = Offset(
-                x = 0f,
-                y = size.height - (intervalY * number)
-            ),
-            end = Offset(
-                x = size.width - (intervalX * number),
-                y = 0f
-            ),
-            strokeWidth = lineWidth,
-            cap = StrokeCap.Round
-        )
-
-        drawLine(
-            color = lineColor,
-            start = Offset(
-                x = 0f + (intervalX * number),
-                y = size.height
-            ),
-            end = Offset(
-                x = size.width,
-                y = 0f + (intervalY * number)
-            ),
-            strokeWidth = lineWidth,
-            cap = StrokeCap.Round
-        )
-
-        drawLine(
-            color = lineColor,
-            start = Offset(
-                x = 0f + (intervalY * number),
-                y = 0f
-            ),
-            end = Offset(
-                x = size.width,
-                y = size.height - (intervalX * number)
-            ),
-            strokeWidth = lineWidth,
-            cap = StrokeCap.Round
-        )
-
-        drawLine(
-            color = lineColor,
-            start = Offset(
-                x = 0f,
-                y = 0f + (intervalY * number)
-            ),
-            end = Offset(
-                x = size.width - (intervalX * number),
-                y = size.height
-            ),
-            strokeWidth = lineWidth,
-            cap = StrokeCap.Round
         )
     }
 }

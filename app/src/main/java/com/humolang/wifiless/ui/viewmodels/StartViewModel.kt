@@ -77,6 +77,11 @@ class StartViewModel(
     val wifiProperties: StateFlow<WifiProperties>
         get() = _wifiProperties.asStateFlow()
 
+    private val _isWifiEnabled =
+        MutableStateFlow(false)
+    val isWifiEnabled: StateFlow<Boolean>
+        get() = _isWifiEnabled.asStateFlow()
+
     init {
         viewModelScope.launch {
             launch { collectLatestRssi() }
@@ -104,7 +109,9 @@ class StartViewModel(
 
     private suspend fun collectRssiValues() {
         wifiParameters.rssiValues.collect { rssiDeque ->
-            _rssiValues.value = rssiDeque
+            if (isWifiEnabled.value) {
+                _rssiValues.value = rssiDeque
+            }
         }
     }
 
@@ -124,12 +131,17 @@ class StartViewModel(
 
     private suspend fun collectLinkSpeedValues() {
         wifiParameters.linkSpeedValues.collect { linkSpeedDeque ->
-            _linkSpeedValues.value = linkSpeedDeque
+            if (isWifiEnabled.value) {
+                _linkSpeedValues.value = linkSpeedDeque
+            }
         }
     }
 
     private suspend fun collectWifiCapabilities() {
         wifiParameters.wifiCapabilities.collect { capabilities ->
+            _isWifiEnabled.value = capabilities
+                .isWifiEnabled
+
             _wifiCapabilities.value = capabilities
         }
     }

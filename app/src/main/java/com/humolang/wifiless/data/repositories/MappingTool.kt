@@ -26,6 +26,9 @@ class MappingTool(
     val blocks: Flow<Map<Column, List<Block>>>
         get() = _blocks
 
+    val minRssi: Int
+        get() = rssiValue.minRssi
+
     fun loadHeat(heatId: Long) {
         _heat = heatDao
             .loadObservableHeat(heatId)
@@ -36,7 +39,14 @@ class MappingTool(
             .loadObservableBlocks(heatId)
     }
 
-    suspend fun checkRssi(block: Block) {
+    suspend fun checkRssi(heat: Heat, block: Block) {
+        val timestamp = System.currentTimeMillis()
+        val updated = heat.copy(
+            modificationTimestamp = timestamp
+        )
+
+        heatDao.update(updated)
+
         val rssi = rssiValue.rssi
         val updatedBlock = block.copy(
             rssi = rssi

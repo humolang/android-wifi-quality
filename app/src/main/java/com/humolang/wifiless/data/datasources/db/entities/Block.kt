@@ -31,7 +31,7 @@ data class Block(
     val rssi: Int = Int.MIN_VALUE
 ) {
 
-    val imageId: Int
+    val drawableId: Int
         get() {
             val image = when (type) {
 
@@ -60,7 +60,7 @@ data class Block(
                     .twotone_window_24
 
                 else -> R.drawable
-                    .twotone_app_icon_24
+                    .twotone_air_24
             }
 
             return image
