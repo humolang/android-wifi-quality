@@ -11,7 +11,7 @@
     <string name="heat_size">Size %1$dx%2$d blocks</string>
     <string name="options">Options</string>
     <string name="done">Done</string>
-    <string name="room_plan">Room Plan</string>
+    <string name="room_plan">Editor</string>
     <string name="plan_name">Plan Name</string>
     <string name="edit_name">Edit name</string>
     <string name="accept_name">Accept name</string>

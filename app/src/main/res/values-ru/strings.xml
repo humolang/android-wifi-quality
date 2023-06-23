@@ -7,11 +7,11 @@
     <string name="expand">Развернуть</string>
     <string name="minimize">Свернуть</string>
     <string name="back">Назад</string>
-    <string name="heatmaps">Тепловые карты</string>
+    <string name="heatmaps">Список</string>
     <string name="heat_size">Размер %1$dx%2$d блоков</string>
     <string name="options">Опции</string>
     <string name="done">Готово</string>
-    <string name="room_plan">План помещения</string>
+    <string name="room_plan">Редактор</string>
     <string name="plan_name">Название плана</string>
     <string name="edit_name">Редактировать название</string>
     <string name="accept_name">Принять название</string>
