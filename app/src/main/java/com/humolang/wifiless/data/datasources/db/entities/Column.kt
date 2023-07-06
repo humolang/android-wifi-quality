@@ -21,7 +21,10 @@ data class Column(
     @ColumnInfo(name = "column_id")
     val id: Long = 0,
 
-    @ColumnInfo(name = "heat_id")
+    @ColumnInfo(
+        name = "heat_id",
+        index = true
+    )
     val heatId: Long,
 
     val x: Int

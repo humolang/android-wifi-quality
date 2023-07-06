@@ -23,7 +23,10 @@ data class Block(
     @ColumnInfo(name = "block_id")
     val id: Long = 0,
 
-    @ColumnInfo(name = "column_id")
+    @ColumnInfo(
+        name = "column_id",
+        index = true
+    )
     val columnId: Long,
 
     val y: Int,
