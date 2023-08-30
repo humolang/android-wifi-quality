@@ -24,6 +24,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.humolang.wifiless.data.datasources.DEFAULT_HEAT_ID
+import com.humolang.wifiless.ui.screens.AboutScreen
 import com.humolang.wifiless.ui.screens.HeatsScreen
 import com.humolang.wifiless.ui.screens.MappingScreen
 import com.humolang.wifiless.ui.screens.PlanningScreen
@@ -44,6 +45,11 @@ fun WiFilessNavHost(navController: NavHostController) {
                         route = SETTINGS_SCREEN_STRING
                     )
                 },
+                navigateToAbout = {
+                    navController.navigate(
+                        route = ABOUT_SCREEN_STRING
+                    )
+                },
                 navigateToPlanning = { navArg ->
                     navController.navigate(
                         route = "$PLANNING_SCREEN_STRING/$navArg"
@@ -59,6 +65,14 @@ fun WiFilessNavHost(navController: NavHostController) {
 
         composable(SETTINGS_SCREEN_STRING) {
             SettingsScreen(
+                popBackStack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(ABOUT_SCREEN_STRING) {
+            AboutScreen(
                 popBackStack = {
                     navController.popBackStack()
                 }

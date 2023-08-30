@@ -99,4 +99,6 @@
     <string name="light_theme">Светлая тема</string>
     <string name="dark_theme">Темная тема</string>
     <string name="wifi_is_off">Wi-Fi выключен</string>
+    <string name="expand_menu">Раскрыть меню</string>
+    <string name="about">О программе</string>
 </resources>

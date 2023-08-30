@@ -26,11 +26,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.twotone.Info
 import androidx.compose.material.icons.twotone.KeyboardArrowDown
 import androidx.compose.material.icons.twotone.KeyboardArrowUp
+import androidx.compose.material.icons.twotone.MoreVert
 import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -76,6 +80,7 @@ import kotlinx.coroutines.flow.StateFlow
 @Composable
 fun StartScreen(
     navigateToSettings: () -> Unit,
+    navigateToAbout: () -> Unit,
     navigateToPlanning: (Long) -> Unit,
     navigateToHeats: () -> Unit,
     startViewModel: StartViewModel =
@@ -111,6 +116,7 @@ fun StartScreen(
         topBar = {
             StartTopBar(
                 navigateToSettings = navigateToSettings,
+                navigateToAbout = navigateToAbout,
                 scrollBehavior = scrollBehavior
             )
         },
@@ -134,6 +140,7 @@ fun StartScreen(
 @Composable
 private fun StartTopBar(
     navigateToSettings: () -> Unit,
+    navigateToAbout: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
     modifier: Modifier = Modifier
 ) {
@@ -153,14 +160,53 @@ private fun StartTopBar(
             }
         },
         actions = {
+            var expanded by remember {
+                mutableStateOf(false)
+            }
+
             IconButton(
-                onClick = navigateToSettings
+                onClick = { expanded = !expanded }
             ) {
                 Icon(
-                    imageVector = Icons.TwoTone.Settings,
+                    imageVector = Icons.TwoTone.MoreVert,
                     contentDescription = stringResource(
-                        id = R.string.settings
+                        id = R.string.expand_menu
                     )
+                )
+            }
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(id = R.string.settings)
+                        )
+                    },
+                    onClick = navigateToSettings,
+                    leadingIcon = {
+                        Icon(
+                            Icons.TwoTone.Settings,
+                            contentDescription = null
+                        )
+                    }
+                )
+
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(id = R.string.about)
+                        )
+                    },
+                    onClick = navigateToAbout,
+                    leadingIcon = {
+                        Icon(
+                            Icons.TwoTone.Info,
+                            contentDescription = null
+                        )
+                    }
                 )
             }
         },
