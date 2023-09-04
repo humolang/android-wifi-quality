@@ -1,45 +1,42 @@
+<!--
+  ~ Copyright (c) 2023  humolang
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="512"
     android:viewportHeight="512">
-  <group android:scaleX="0.528"
-      android:scaleY="0.528"
-      android:translateX="120.832"
-      android:translateY="120.832">
+  <group android:scaleX="0.6139535"
+      android:scaleY="0.6139535"
+      android:translateX="98.8279"
+      android:translateY="98.8279">
     <path
-        android:pathData="M303.62,183.5L303.62,183.5A13.84,15.22 90,0 1,288.4 197.35L229.26,197.35A13.84,15.22 90,0 1,214.03 183.5L214.03,183.5A13.84,15.22 90,0 1,229.26 169.66L288.4,169.66A13.84,15.22 90,0 1,303.62 183.5z"
-        android:strokeWidth="1"
+        android:pathData="M318.5,342.45L318.5,342.45A19.31,21.24 90,0 1,297.26 361.76L214.74,361.76A19.31,21.24 90,0 1,193.5 342.45L193.5,342.45A19.31,21.24 90,0 1,214.74 323.14L297.26,323.14A19.31,21.24 90,0 1,318.5 342.45z"
+        android:strokeWidth="27.91"
         android:fillColor="#225500"
         android:strokeColor="#225500"/>
     <path
-        android:pathData="M348.71,121.77L348.71,121.77A13.68,15.05 90,0 1,333.66 135.45L183.99,135.45A13.68,15.05 90,0 1,168.95 121.77L168.95,121.77A13.68,15.05 90,0 1,183.99 108.08L333.66,108.08A13.68,15.05 90,0 1,348.71 121.77z"
-        android:strokeWidth="1"
+        android:pathData="M381.41,256.31L381.41,256.31A19.09,21 90,0 1,360.42 275.4L151.58,275.4A19.09,21 90,0 1,130.59 256.31L130.59,256.31A19.09,21 90,0 1,151.58 237.22L360.42,237.22A19.09,21 90,0 1,381.41 256.31z"
+        android:strokeWidth="27.91"
         android:fillColor="#225500"
         android:strokeColor="#225500"/>
     <path
-        android:pathData="M393.84,60.06L393.84,60.06A13.6,14.96 90,0 1,378.89 73.66L138.77,73.66A13.6,14.96 90,0 1,123.81 60.06L123.81,60.06A13.6,14.96 90,0 1,138.77 46.46L378.89,46.46A13.6,14.96 90,0 1,393.84 60.06z"
-        android:strokeWidth="1"
-        android:fillColor="#225500"
-        android:strokeColor="#225500"/>
-    <path
-        android:pathData="M114.46,111.73L114.46,111.73A13.49,13.49 114.04,0 1,131.89 119.5L218.84,346.46A13.49,13.49 114.04,0 1,211.07 363.89L211.07,363.89A13.49,13.49 114.04,0 1,193.64 356.12L106.69,129.16A13.49,13.49 114.04,0 1,114.46 111.73z"
-        android:strokeWidth="0.996143"
-        android:fillColor="#225500"
-        android:strokeColor="#225500"/>
-    <path
-        android:pathData="M250.9,212.46L250.9,212.46A13.49,13.49 114.04,0 1,268.33 220.23L355.28,447.19A13.49,13.49 114.04,0 1,347.51 464.62L347.51,464.62A13.49,13.49 114.04,0 1,330.08 456.84L243.13,229.88A13.49,13.49 114.04,0 1,250.9 212.46z"
-        android:strokeWidth="0.996143"
-        android:fillColor="#225500"
-        android:strokeColor="#225500"/>
-    <path
-        android:pathData="M397.54,111.73L397.54,111.73A13.49,13.49 65.96,0 0,380.11 119.5L293.16,346.46A13.49,13.49 65.96,0 0,300.93 363.89L300.93,363.89A13.49,13.49 65.96,0 0,318.36 356.12L405.31,129.16A13.49,13.49 65.96,0 0,397.54 111.73z"
-        android:strokeWidth="1"
-        android:fillColor="#225500"
-        android:strokeColor="#225500"/>
-    <path
-        android:pathData="M260.69,212.46L260.69,212.46A13.49,13.49 65.96,0 0,243.27 220.23L156.32,447.19A13.49,13.49 65.96,0 0,164.09 464.62L164.09,464.62A13.49,13.49 65.96,0 0,181.52 456.84L268.47,229.88A13.49,13.49 65.96,0 0,260.69 212.46z"
-        android:strokeWidth="1"
+        android:pathData="M444.39,170.21L444.39,170.21A18.97,20.87 90,0 1,423.52 189.18L88.48,189.18A18.97,20.87 90,0 1,67.61 170.21L67.61,170.21A18.97,20.87 90,0 1,88.48 151.24L423.52,151.24A18.97,20.87 90,0 1,444.39 170.21z"
+        android:strokeWidth="27.91"
         android:fillColor="#225500"
         android:strokeColor="#225500"/>
   </group>
