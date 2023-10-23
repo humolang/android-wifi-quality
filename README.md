@@ -1,5 +1,4 @@
 # Wi-Filess
-Android app for assessing Wi-Fi signal quality
 
 ## Description
 The Wi-Filess application is designed to evaluate the signal quality of Wi-Fi network based on the Received Signal Strength Indicator (RSSI).
